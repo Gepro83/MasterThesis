@@ -32,6 +32,7 @@ public class tBabelfyer {
 			if(concepts.size() == 0) fail("no concepts found");
 			
 			for(Concept concept : concepts){
+				System.out.println(concept.ID().value());
 				if(concept.Scores().RelevanceScore() < 0) fail("RelevanceScore not set");
 				if(concept.Scores().CoherenceScore() < 0) fail("CoherenceScore not set");
 				if(concept.Scores().DisambiguationScore() < 0) fail("DisambigutationScore not set");

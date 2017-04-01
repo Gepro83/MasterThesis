@@ -77,11 +77,8 @@ public class ConceptFinder {
 		Scanner reader = new Scanner(System.in);
 		
 		for(Dataset dataset : m_datasetManager){
-			dataset.setLanguage(Language.IT);
-			
 			ConceptText currentConceptText = m_datasetIdToConceptText.get(dataset.ID());
-			currentConceptText.SetLanguage(Language.IT);
-			/*
+
 			String langText = currentConceptText.Text();
 			langText = langText.substring(langText.indexOf(Globals.KEYWORDS_MARKER) + Globals.KEYWORDS_MARKER.length());
 			try{
@@ -107,7 +104,7 @@ public class ConceptFinder {
 					}
 				}
 				
-			}*/
+			}
 		}
 
 		reader.close();
