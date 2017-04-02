@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
@@ -81,8 +82,21 @@ public class tDataset {
 	}
 	
 	@Test
-	public void testIDEquals(){
-		EqualsVerifier.forClass(RdfId.class).verify();
+	public void testEquals(){
+
+		Dataset ds = new Dataset(new RdfId("asdf"));
+		Dataset ds2 = new Dataset(new RdfId("asdf"));
+		
+		assertEquals(true, ds.equals(ds2));
+		
+		HashSet<Dataset> set = new HashSet<Dataset>();
+		set.add(ds);
+		
+		assertEquals(false, set.add(ds2));
+		
+		set.remove(ds2);
+		
+		assertEquals(0, set.size());
 	}
 
 }

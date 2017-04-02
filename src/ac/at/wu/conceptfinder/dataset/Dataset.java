@@ -3,11 +3,16 @@ package ac.at.wu.conceptfinder.dataset;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
 import ac.at.wu.conceptfinder.stringanalysis.Language;
@@ -33,7 +38,7 @@ public class Dataset implements Serializable{
 		m_description = "";
 		m_concepts = new Vector<Concept>();
 		m_language = Language.NULL;
-		m_categories = EnumSet.noneOf(BabelDomain.class);
+		m_categories = new EnumMap<BabelDomain, Float>(BabelDomain.class);
 	}
 	
 	public Dataset(RdfId ID){
@@ -45,7 +50,49 @@ public class Dataset implements Serializable{
 		m_description = "";
 		m_concepts = new Vector<Concept>();
 		m_language = Language.NULL;
-		m_categories = EnumSet.noneOf(BabelDomain.class);
+		m_categories = new EnumMap<BabelDomain, Float>(BabelDomain.class);
+	}
+	
+	@Override
+	public final boolean equals(Object obj){
+		if(obj == null) return false;
+		if (!(obj instanceof Dataset))
+	            return false;
+	    if (obj == this)
+	            return true;
+	    Dataset dataset = (Dataset) obj;
+	    
+	    return new EqualsBuilder().
+	    		append(m_ID, dataset.ID()).
+	    		/*append(m_categories, dataset.Categories()).
+	    		append(m_concepts, dataset.Concepts()).
+	    		append(m_description, dataset.Description()).
+	    		append(m_distributions, dataset.Distributions()).
+	    		append(m_issued, dataset.Issued()).
+	    		append(m_keywords, dataset.Keywords()).
+	    		append(m_language, dataset.Language()).
+	    		append(m_modified, dataset.Modified()).
+	    		append(m_portal, dataset.Portal()).
+	    		append(m_title, dataset.Title()).*/
+	    		isEquals();
+		 
+	}
+	
+	@Override
+	public final int hashCode(){
+		return new HashCodeBuilder(17, 31).
+				append(m_ID).
+				append(m_categories).
+				append(m_concepts).
+				append(m_description).
+				append(m_distributions).
+				append(m_issued).
+				append(m_keywords).
+				append(m_language).
+				append(m_modified).
+				append(m_portal).
+				append(m_title).					
+				toHashCode();
 	}
 	
 	public RdfId ID(){
@@ -64,7 +111,7 @@ public class Dataset implements Serializable{
 	public Date Modified(){ return ( (m_modified == null) ? null : (Date) m_modified.clone() ); }
 	public Language Language(){ return m_language; }
 	public List<Concept> Concepts(){ return Collections.unmodifiableList(m_concepts); }
-	public Set<BabelDomain> Categories(){ return Collections.unmodifiableSet(m_categories); }
+	public Map<BabelDomain, Float> Categories(){ return Collections.unmodifiableMap(m_categories); }
 	/*
 	 * currently not used
 	public URL URL(){
@@ -87,8 +134,12 @@ public class Dataset implements Serializable{
 			m_concepts.addElement(concept);
 	}
 	
-	public void addCategory(BabelDomain category){
-		m_categories.add(category);
+	/*
+	 * Adds a category to the dataset
+	 * if the category all ready exists the confidence is overwritten
+	 */
+	public void addCategory(BabelDomain category, float confidence){
+		m_categories.put(category, confidence);
 	}
 	
 	public void setPortal(String portal){ m_portal = portal; }
@@ -165,6 +216,6 @@ public class Dataset implements Serializable{
 	//private URL m_URL;
 	private Language m_language;
 	private Vector<Concept> m_concepts;
-	private EnumSet<BabelDomain> m_categories;
+	private EnumMap<BabelDomain, Float> m_categories;
 
 }

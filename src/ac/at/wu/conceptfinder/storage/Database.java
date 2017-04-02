@@ -52,6 +52,9 @@ public class Database {
 		}
 	}
 	
+	/*
+	 * outdated
+	 */
 	private void CreateDatasetTables() throws SQLException, StorageException{
 		
 		
@@ -144,7 +147,7 @@ public class Database {
 			for(Dataset dataset : datasets){
 				saveDataset(dataset, connection);
 				saveConcepts(dataset.ID().value(), dataset.Concepts(), connection);
-				saveDistributions(dataset.ID().value(), dataset.Distributions(), connection);
+				//saveDistributions(dataset.ID().value(), dataset.Distributions(), connection);
 			}
 			
 		}catch (SQLException e){
@@ -170,7 +173,7 @@ public class Database {
 		PreparedStatement insert;
 		
 		try {
-			insert = connection.prepareStatement("INSERT INTO dataset VALUES(?,?,?,?,?,?,?,?,?)");
+			insert = connection.prepareStatement("INSERT INTO dataset VALUES(?,?,?,?,?,?,?,?)");
 			
 			insert.setString(1, dataset.ID().value());
 			insert.setString(2, dataset.Description().length() < 16383 ? dataset.Description() : dataset.Description().substring(0, 16382));
@@ -180,13 +183,6 @@ public class Database {
 			insert.setTimestamp(6, (dataset.Issued() == null) ? null : new Timestamp(dataset.Issued().getTime()));
 			insert.setTimestamp(7, (dataset.Modified() == null) ? null : new Timestamp(dataset.Modified().getTime()));
 			insert.setString(8, dataset.Portal());
-			
-			String categories = "";
-			if(!dataset.Categories().isEmpty())
-				for(BabelDomain category : dataset.Categories())
-					categories += category.toString() + "#";
-			if(categories != "") categories = categories.substring(0, categories.length() - 1);
-			insert.setString(9, categories);
 			
 			insert.executeUpdate();
 			insert.close();
@@ -327,8 +323,7 @@ public class Database {
 						+ "language = ?,"
 						+ "issued = ?,"
 						+ "modified = ?,"
-						+ "portal = ?,"
-						+ "categories = ?"
+						+ "portal = ?"
 						+ " WHERE id = ?");
 
 				update.setString(1, dataset.Description().length() < 16383 ? dataset.Description() : dataset.Description().substring(0, 16382));
@@ -338,13 +333,8 @@ public class Database {
 				update.setTimestamp(5, (dataset.Issued() == null) ? null : new Timestamp(dataset.Issued().getTime()));
 				update.setTimestamp(6, (dataset.Modified() == null) ? null : new Timestamp(dataset.Modified().getTime()));
 				update.setString(7, dataset.Portal());
+				update.setString(8,  dataset.ID().value());
 				
-				String categories = "";
-				for(BabelDomain category : dataset.Categories())
-					categories += category.toString() + "#";
-				if(categories != "") categories = categories.substring(0, categories.length() - 1);
-				update.setString(8, categories);
-				update.setString(9,  dataset.ID().value());
 				update.executeUpdate();
 				update.close();
 				//System.out.println("Done!");
@@ -434,7 +424,7 @@ public class Database {
 				}
 			}
 
-			fillDistributions(dataset, connection);
+			//fillDistributions(dataset, connection);
 			
 			selectConcepts.close();
 			select.close();
@@ -640,14 +630,6 @@ public class Database {
 		
 		for(String keyword : extractWords(result.getString("keywords")))
 			dataset.addKeyword(keyword);
-		
-		for(String category : extractWords(result.getString("categories"))){
-			try{
-				dataset.addCategory(BabelDomain.valueOf(category));
-			}catch(IllegalArgumentException e){
-				//ignore unknown categories
-			}
-		}
 		
 		dataset.setLanguage(LanguageDetector.stringToEnum(result.getString("language")));
 		
