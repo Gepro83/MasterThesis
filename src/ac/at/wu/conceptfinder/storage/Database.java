@@ -423,7 +423,6 @@ public class Database {
 					//Ignore concepts with invalid IDs
 				}
 			}
-
 			//fillDistributions(dataset, connection);
 			
 			selectConcepts.close();
@@ -434,9 +433,6 @@ public class Database {
 			e.printStackTrace();
 			throw new StorageException("some SQL error occured with host: " + m_host, StorageError.SQLError);
 		}
-
-		
-		
 		return dataset;
 	}
 	
@@ -615,6 +611,31 @@ public class Database {
 			throw new StorageException("some SQL error occured with host: " + m_host, StorageError.SQLError);
 		}
 		
+	}
+	
+
+	/*
+	 * Gets the names of all portals available in the database
+	 */
+	public List<String> getAllPortals() throws StorageException{
+		//Establish a connection to the database
+		Connection connection = getConnection();
+		Statement select = getStatement(connection);
+	
+		try {
+			//Get the list of portals from the database
+			ResultSet result = select.executeQuery("SELECT DISTINCT portal FROM dataset");
+			//return the list 
+			ArrayList<String> portals = new ArrayList<String>();
+			while(result.next()){
+				portals.add(result.getString("portal"));
+			}
+			return portals;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new StorageException("some SQL error occured with host: " + m_host, StorageError.SQLError);
+		} 		
 	}
 	
 	/*

@@ -15,7 +15,6 @@ public class DatasetManager implements Iterable<Dataset> {
 
 	public DatasetManager(){
 		m_datasets = new HashSet<Dataset>();
-
 	}
 	
 	/*
@@ -31,6 +30,14 @@ public class DatasetManager implements Iterable<Dataset> {
 		}
 		
 		m_datasets.add(dataset);
+	}
+	
+	/*
+	 * Adds a set of datasets
+	 */
+	public void addDatasets(Set<Dataset> datasets){
+		for(Dataset dataset : datasets)
+			addDataset(dataset);
 	}
 	
 	public void clear(){

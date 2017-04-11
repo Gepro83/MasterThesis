@@ -1,30 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane fx:id="m_MainPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.CategorizerWindow">
+<BorderPane fx:id="m_MainPane" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.CategorizerWindow">
    <top>
-      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <HBox BorderPane.alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" text="Save">
+            <Button fx:id="m_LoadBtn" mnemonicParsing="false" text="Load Portal(s)">
                <HBox.margin>
-                  <Insets left="10.0" top="10.0" />
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </HBox.margin>
             </Button>
+            <VBox alignment="TOP_CENTER">
+               <children>
+                  <ListView fx:id="m_PortalList">
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </ListView>
+                  <Button fx:id="m_UnloadBtn" mnemonicParsing="false" text="Remove Portal">
+                     <VBox.margin>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                     </VBox.margin>
+                  </Button>
+               </children>
+            </VBox>
          </children>
       </HBox>
    </top>
    <center>
-      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <HBox BorderPane.alignment="CENTER">
          <children>
             <TableView fx:id="m_DatasetTable">
               <columns>
                 <TableColumn fx:id="m_LinkColumn" editable="false" prefWidth="50.0" text="Dataset" />
-                <TableColumn fx:id="m_PortalColumn" editable="false" text="Portal" />
+                <TableColumn fx:id="m_PortalColumn" editable="false" prefWidth="115.0" text="Portal" />
                 <TableColumn fx:id="m_TitleColumn" editable="false" text="Title" />
                 <TableColumn fx:id="m_KeywordsColumn" editable="false" text="Keywords" />
                 <TableColumn fx:id="m_CategoriesColumn" editable="false" text="Categories" />
@@ -34,15 +49,31 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </HBox.margin>
             </TableView>
-            <TableView fx:id="m_ConceptTable">
-              <columns>
-                <TableColumn prefWidth="75.0" text="C1" />
-                <TableColumn prefWidth="75.0" text="C2" />
-              </columns>
+            <VBox>
+               <children>
+                  <TableView fx:id="m_ConceptTable">
+                    <columns>
+                      <TableColumn fx:id="m_ConceptNameColumn" prefWidth="75.0" text="Name" />
+                        <TableColumn fx:id="m_ConceptCatColumn" prefWidth="130.0" text="Category" />
+                        <TableColumn fx:id="m_ConceptCatConfColumn" prefWidth="58.0" text="Conf" />
+                        <TableColumn fx:id="m_ConceptRelScoreColumn" prefWidth="71.0" text="Relev" />
+                        <TableColumn fx:id="m_ConceptCohScoreColumn" prefWidth="85.0" text="Coher" />
+                    </columns>
+                  </TableView>
+                  <Label text="Keyword concept">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <font>
+                        <Font name="System Bold" />
+                     </font>
+                  </Label>
+                  <Label text="Found by most-common-sense heuristic" textFill="BLUE" />
+               </children>
                <HBox.margin>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  <Insets bottom="10.0" right="10.0" top="10.0" />
                </HBox.margin>
-            </TableView>
+            </VBox>
          </children>
       </HBox>
    </center>
