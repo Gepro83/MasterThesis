@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.stage.Stage;
 
 
 /*
@@ -32,6 +33,7 @@ public class PortalSelectionWindow implements Initializable {
 			@Override public void handle(ActionEvent e) {
 				if(m_Callback == null) return;
 				m_Callback.resultsReady(m_Portals.getSelectionModel().getSelectedItems());
+				closeWindow();
 		    }
 		});
 	}
@@ -47,6 +49,11 @@ public class PortalSelectionWindow implements Initializable {
 		m_Callback = callback;
 	}
 
+	private void closeWindow(){
+		Stage stage = (Stage) m_LoadBtn.getScene().getWindow();
+		stage.close();
+	}
+	
 	@FXML
 	private ListView<String> m_Portals;
 	
