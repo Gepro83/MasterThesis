@@ -23,8 +23,8 @@ public class tConceptText {
 	Concept car, tree; 
 	
 	public tConceptText() throws IOException, InvalidConceptIDException, InvalidBabelSynsetIDException{
-		car = new BabelConcept(new ConceptID("bn:00007309n"), "car");
-		tree = new BabelConcept(new ConceptID("bn:00078131n"), "tree");
+		car = new BabelConcept(new ConceptID("bn:00007309n"), "car", null, 0);
+		tree = new BabelConcept(new ConceptID("bn:00078131n"), "tree", null, 0);
 		text.SetLanguage(Language.EN);
 	}
 	

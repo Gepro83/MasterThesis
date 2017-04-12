@@ -1,5 +1,8 @@
 package ac.at.wu.conceptfinder.storage;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
@@ -16,6 +19,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.postgresql.util.PSQLException;
@@ -43,7 +47,8 @@ public class Database {
 		m_password = password;
 		m_host = host;
 		m_conceptCreator = conceptCreator;
-		
+		//Load the mapping for active conceptids to categories
+		m_conceptIdToCategory = loadActiveDomains();
 		try{
 			CreateDatasetTables();
 		}catch (SQLException e){
@@ -639,6 +644,84 @@ public class Database {
 	}
 	
 	/*
+	 * Copies the contents of the babeldomains file to the database table "BabelDomains"
+	 * (takes a few minutes)
+	 */
+	public void copyBabelDomains() throws StorageException, IOException{
+		Connection connection = getConnection();
+		
+		try{
+			connection.setAutoCommit(false);
+			Statement insert = getStatement(connection);
+			Map<ConceptID, Object[]> domainMap = loadConceptToDomain();
+			for(ConceptID ID : domainMap.keySet()){
+				insert.executeUpdate("INSERT INTO babeldomains VALUES('" +
+						ID.value() + "','" +
+						(BabelDomain) domainMap.get(ID)[0] + "'," +
+						(float) domainMap.get(ID)[1] + ")");
+			}
+			connection.commit();
+		}catch (SQLException e) {
+			e.printStackTrace();
+			throw new StorageException("some SQL error occured with host: " + m_host, StorageError.SQLError);
+		}
+	}
+	
+	//Loads the mapping of synsets to BabelDomains with confidence scores from the resource file
+	private HashMap<ConceptID, Object[]> loadConceptToDomain() throws IOException {
+		//Load the file where the domains are stored
+		try (BufferedReader br = new BufferedReader(new FileReader("resources/babeldomains.txt"))) {
+			//Initialise a map to hold 2,68 mio entries
+			HashMap<ConceptID, Object[]> conceptToDomain = new HashMap<ConceptID, Object[]>(2680000, 1);
+			//Go through the file line by line
+			String line;
+			while ((line = br.readLine()) != null) {
+				//Each line consists of the synset ID the corresponding BabelDomain and a score for confidence
+				//separated by a tab
+				//Split the line at the tabs in the 3 parts mentioned above
+				String[] parts = line.split("\t");
+				//Create a ConceptID out of the first part
+				ConceptID conceptID = new ConceptID(parts[0]);
+				//Create a BabelDomain out of the second part 
+				BabelDomain domain = BabelDomain.valueOfName(parts[1]);
+				//Create a float out of the third part
+				float confidence = Float.parseFloat(parts[2].startsWith("*") ? parts[2].substring(1) : parts[2]);
+				//Add an entry to the mapping for concepts to BabelDomains
+				conceptToDomain.put(conceptID, new Object[]{domain, confidence});
+			}
+			return conceptToDomain;
+		}
+	}
+	
+	/*
+	 * Loads the "activebabeldomains" table in the database to a Map.
+	 * This represents the mapping of synsets to categories and confidences.
+	 * This map only contains synsets that currently can be found in the datasets.
+	 * @return The values of this map are Object arrays which store the category as a
+	 * 			BabelDomain object under index 0 and the corresponding confidence
+	 * 			as a Float under index 1  
+	 */
+	private HashMap<ConceptID, Object[]> loadActiveDomains() throws StorageException{
+		Connection connection = getConnection();
+		Statement select = getStatement(connection);
+		
+		try {
+			ResultSet results = select.executeQuery("SELECT * FROM activebabeldomains");
+			HashMap<ConceptID, Object[]> babeldomainsMap = new HashMap<ConceptID, Object[]>(8000);
+			while(results.next()){
+				ConceptID cid = new ConceptID(results.getString("synsetid"));
+				BabelDomain domain = BabelDomain.valueOf(results.getString("domain"));
+				float confidence = results.getFloat("confidence");
+				babeldomainsMap.put(cid, new Object[]{domain, confidence});
+			}
+			return babeldomainsMap;
+		} catch (SQLException e) {
+			throw new StorageException("Some SQL error happend when accessing activebabeldomains table ", StorageError.SQLError);
+		}
+		
+	}
+	
+	/*
 	 * fills a dataset with the data that is at the actual position of the cursor
 	 * make sure it does not point to empty row!
 	 */
@@ -663,14 +746,26 @@ public class Database {
 	}
 	
 	private Concept fillConcept(ResultSet result) throws SQLException, InvalidConceptIDException{
+		ConceptID cid = new ConceptID(result.getString("conceptid"));
+		Object[] categoryAndConf = m_conceptIdToCategory.get(cid);
+		BabelDomain category = null;
+		float confidence = 0;
+		
+		//If the concept has a category 
+		if(categoryAndConf != null){
+			category = (BabelDomain) m_conceptIdToCategory.get(cid)[0];
+			confidence = (float) m_conceptIdToCategory.get(cid)[1];
+		}
 		Concept concept = 	m_conceptCreator.createConcept(
-				new ConceptID(result.getString("conceptid")), 
+						cid, 
 						result.getString("name"),
 				new ConceptScores(result.getFloat("disambiguationscore"),
 						result.getFloat("relevancescore"), 
 						result.getFloat("coherencescore"), 
 						result.getFloat("totalscore")),
-						result.getString("mark"));
+						result.getString("mark"),
+						category,
+						confidence);
 		return concept;
 	}
 	
@@ -771,4 +866,5 @@ public class Database {
 	private String m_password;
 	private String m_host;
 	private ConceptCreator m_conceptCreator;
+	private HashMap<ConceptID, Object[]> m_conceptIdToCategory;
 }

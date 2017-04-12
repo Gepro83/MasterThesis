@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
+import ac.at.wu.conceptfinder.storage.Database;
 import it.uniroma1.lcl.babelnet.InvalidBabelSynsetIDException;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
@@ -12,21 +13,13 @@ public class BabelConcept implements Concept {
 
 	private static final long serialVersionUID = -8193421919124250631L;
 
-	public BabelConcept(ConceptID ID, String name) throws IOException, InvalidBabelSynsetIDException {
+	public BabelConcept(ConceptID ID, String name, BabelDomain category, float catConf) throws IOException, InvalidBabelSynsetIDException {
 		m_ConceptID = new ConceptID(ID.value());
 		m_name = name;
 		m_mark = "";
 		m_scores = new ConceptScores();
-		if(m_conceptToDomain == null)
-			loadConceptToDomain();
-		Object[] catAndConf = m_conceptToDomain.get(m_ConceptID);
-		if(catAndConf == null){
-			m_category = null;
-			m_catConfidence = 0;
-			return;
-		}
-		m_category = (BabelDomain) catAndConf[0];
-		m_catConfidence = (float) catAndConf[1];
+		m_category = category;
+		m_catConfidence = catConf;
 	}
 
 	@Override
@@ -78,30 +71,5 @@ public class BabelConcept implements Concept {
 	private float m_catConfidence;
 	private static HashMap<ConceptID, Object[]> m_conceptToDomain = null;
 	
-	//Loads the mapping of synsets to BabelDomains with confidence scores from the resource file
-	private void loadConceptToDomain() throws IOException {
-		System.out.println("Loading map for categories...");
-		//Load the file where the domains are stored
-		try (BufferedReader br = new BufferedReader(new FileReader("resources/babeldomains.txt"))) {
-			//Initialise the map to hold 2,68 mio entries
-			m_conceptToDomain = new HashMap<ConceptID, Object[]>(2680000, 1);
-			//Go through the file line by line
-			String line;
-			while ((line = br.readLine()) != null) {
-				//Each line consists of the synset ID the corresponding BabelDomain and a score for confidence
-				//separated by a tab
-				//Split the line at the tabs in the 3 parts mentioned above
-				String[] parts = line.split("\t");
-				//Create a ConceptID out of the first part
-				ConceptID conceptID = new ConceptID(parts[0]);
-				//Create a BabelDomain out of the second part 
-				BabelDomain domain = BabelDomain.valueOfName(parts[1]);
-				//Create a float out of the third part
-				float confidence = Float.parseFloat(parts[2].startsWith("*") ? parts[2].substring(1) : parts[2]);
-				//Add an entry to the mapping for concepts to BabelDomains
-				m_conceptToDomain.put(conceptID, new Object[]{domain, confidence});
-			}
-		}
-		System.out.println("Done!");
-	}
+
 }

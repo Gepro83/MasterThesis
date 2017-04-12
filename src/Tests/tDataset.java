@@ -69,8 +69,8 @@ public class tDataset {
 	
 	@Test
 	public void testConcepts() throws IOException, InvalidConceptIDException, InvalidBabelSynsetIDException{
-		Concept car = new BabelConcept(new ConceptID("bn:00007309n"), "car");
-		Concept tree = new BabelConcept(new ConceptID("bn:00078131n"), "tree");
+		Concept car = new BabelConcept(new ConceptID("bn:00007309n"), "car", null, 0);
+		Concept tree = new BabelConcept(new ConceptID("bn:00078131n"), "tree", null, 0);
 		Dataset ds = new Dataset(new RdfId("asdf"));
 		
 		assertEquals(0, ds.Concepts().size());

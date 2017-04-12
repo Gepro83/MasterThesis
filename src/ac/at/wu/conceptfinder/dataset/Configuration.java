@@ -3,7 +3,7 @@ package ac.at.wu.conceptfinder.dataset;
 /*
  * Holds all configuration parameters for a categorization of datasets  
  */
-public class Configuration extends DatasetManager {
+public class Configuration{
 	
 	public Configuration(){
 		//set default values for parameters

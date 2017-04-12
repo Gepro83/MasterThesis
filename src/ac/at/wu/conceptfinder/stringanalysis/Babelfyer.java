@@ -83,7 +83,7 @@ public class Babelfyer implements ConceptDetector {
 			for(SemanticAnnotation annotation : bfyAnnotations){
 				
 				BabelSynset synset = m_babelNet.getSynset(new BabelSynsetID(annotation.getBabelSynsetID()));
-				BabelConcept currentConcept = new BabelConcept(new ConceptID(annotation.getBabelSynsetID()), synset.toString());
+				BabelConcept currentConcept = new BabelConcept(new ConceptID(annotation.getBabelSynsetID()), synset.toString(), null, 0);
 				ConceptScores scores = new ConceptScores();
 				
 				scores.setCoherenceScore((float) annotation.getCoherenceScore());

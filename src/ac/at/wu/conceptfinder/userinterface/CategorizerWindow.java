@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import ac.at.wu.conceptfinder.dataset.Categorizer;
+import ac.at.wu.conceptfinder.dataset.Configuration;
 import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.StorageException;
@@ -34,6 +35,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableView.TableViewSelectionModel;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.Clipboard;
@@ -80,10 +82,10 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 	public void initialize(URL arg0, ResourceBundle arg1) {
 	
 		//Set layout for UI
-		m_DatasetTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(2));
-		m_ConceptTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(2));
+		m_DatasetTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(5).multiply(3));
+		m_ConceptTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(5).multiply(2));
+		m_ConceptTable.prefHeightProperty().bind(m_MainPane.heightProperty());
 		m_PortalList.prefWidthProperty().bind(m_MainPane.widthProperty().divide(4));
-		m_PortalList.prefHeightProperty().bind(m_MainPane.heightProperty().divide(5));
 		
 		//Setting up the columns for the Dataset table
 		m_LinkColumn.setCellValueFactory(new Callback<CellDataFeatures<Dataset, String>, ObservableValue<String>>() {
@@ -163,7 +165,9 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 		});
 		m_ConceptCatColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
 			   public ObservableValue<String> call(CellDataFeatures<Concept, String> arg) {
-				   return new SimpleStringProperty(arg.getValue().Category().toString());
+				   //Concepts may or may not have categories
+				   String category = arg.getValue().Category() != null ? arg.getValue().Category().toString() : "";  
+				   return new SimpleStringProperty(category);
 			   }
 		});
 		m_ConceptCatColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
@@ -183,7 +187,10 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 		});
 		m_ConceptRelScoreColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
 			   public ObservableValue<String> call(CellDataFeatures<Concept, String> arg) {
-				   return new SimpleStringProperty(String.valueOf(arg.getValue().Scores().RelevanceScore()));
+				   //Remove digist after 2. decimal place
+				   float relScore = arg.getValue().Scores().RelevanceScore();
+				   relScore = Math.round(relScore*100)/100.0f;
+				   return new SimpleStringProperty(String.valueOf(relScore));
 			   }
 		});
 		m_ConceptRelScoreColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
@@ -193,7 +200,10 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 		});
 		m_ConceptCohScoreColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
 			   public ObservableValue<String> call(CellDataFeatures<Concept, String> arg) {
-				   return new SimpleStringProperty(String.valueOf(arg.getValue().Scores().CoherenceScore()));
+				   //Remove digist after 2. decimal place
+				   float cohScore = arg.getValue().Scores().CoherenceScore();
+				   cohScore = Math.round(cohScore*100)/100.0f;
+				   return new SimpleStringProperty(String.valueOf(cohScore));
 			   }
 		});
 		m_ConceptCohScoreColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
@@ -282,6 +292,31 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 				}
 		});
 		
+		//The categorize button performs the categorization of all active datasets using the settings entered in the textfields
+		m_CategorizeBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				//First check if all input input is valid
+				if(!checkInputFields()) return;
+				//Create set the configuration of the Categorizer with the settings of the input fields
+				Configuration conf = m_Categorizer.Configuration();
+				conf.setMCSScore(Float.parseFloat(m_MCSTf.getText()));
+				conf.setRelevanceWeight(Float.parseFloat(m_RelScoreTf.getText()));
+				conf.setCoherenceWeight(Float.parseFloat(m_CohScoreTf.getText()));
+				conf.setKeywordsWeight(Float.parseFloat(m_KeyTf.getText()));
+				conf.setCategoryConfidenceWeight(Float.parseFloat(m_CatConfTf.getText()));
+				conf.setRepeatedConceptWeight(Float.parseFloat(m_RepeatTf.getText()));
+				conf.setNumOutputCategories(Integer.parseInt(m_numCatsTf.getText()));
+				//Clear the dataset table
+				m_DatasetTable.getItems().removeAll(m_Categorizer.Datasets());
+				//Clear the concept tableview
+				m_Conceptsdata.clear();
+				//Run the categorization algorithm
+				m_Categorizer.categorize();
+				//Refresh the dataset table
+				m_DatasetTable.getItems().addAll(m_Categorizer.Datasets());
+			}
+		});
+		
 		//Populate tables
 		m_DatasetTable.setItems(m_data);
 		m_ConceptTable.setItems(m_Conceptsdata);
@@ -316,9 +351,103 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 		m_Categorizer = new Categorizer(m_Database);
 	}
 	
+	/*
+	 * checks if all text fields have been filled correctly
+	 * alerts the user otherwise
+	 * @return true if all input is valid, false otherwise
+	 */
+	private boolean checkInputFields(){
+		String allertMsg = "Invalid input: " + System.getProperty("line.separator");
+		
+		//Check input for MCS text field
+		try{
+			Float testValue = Float.parseFloat(m_MCSTf.getText());
+			if(testValue < 0 || testValue > 1)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a number between 0 and 1 as a MCS score." + System.getProperty("line.separator");
+		}
+		//Check input for relevance score weight and coherence score weight text fields
+		try{
+			Float relScoreW = Float.parseFloat(m_RelScoreTf.getText());
+			Float cohScoreW = Float.parseFloat(m_CohScoreTf.getText());
+			if(relScoreW < 0 || relScoreW > 1)
+				throw new NumberFormatException();
+			if(cohScoreW < 0 || cohScoreW > 1)
+				throw new NumberFormatException();
+			if((relScoreW + cohScoreW) != 1)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a number between 0 and 1 as a weight for relevance and coherence score." + System.getProperty("line.separator");
+			allertMsg += "Sum of the weights for relevance and coherence score must be 1." + System.getProperty("line.separator");
+		}
+		//Check input for MCS text field
+		try{
+			Float testValue = Float.parseFloat(m_KeyTf.getText());
+			if(testValue < 0)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a positive number as multiplier for keyword concepts." + System.getProperty("line.separator");
+		}
+		//Check input for category confidence weight
+		try{
+			Float testValue = Float.parseFloat(m_CatConfTf.getText());
+			if(testValue < 0)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a positive number as a weight for the weight of the category confidence of concepts." + System.getProperty("line.separator");
+		}
+		//Check input for weight of repeated concepts
+		try{
+			Float testValue = Float.parseFloat(m_RepeatTf.getText());
+			if(testValue < 0)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a positive number as a weight for repeated concepts." + System.getProperty("line.separator");
+		}
+		//Check input for number of output categories
+		try{
+			Integer testValue = Integer.parseInt(m_numCatsTf.getText());
+			if(testValue < 1)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a positive number for the number of output categories" + System.getProperty("line.separator");
+		}
+		if(allertMsg.length() > 18){
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setContentText(allertMsg);
+			alert.showAndWait();
+			return false;
+		}
+		return true;
+	}
 	
 	@FXML
 	private BorderPane m_MainPane;
+	
+	@FXML
+	private TextField m_MCSTf;
+	
+	@FXML
+	private TextField m_RelScoreTf;
+	
+	@FXML
+	private TextField m_CohScoreTf;
+	
+	@FXML
+	private TextField m_KeyTf;
+	
+	@FXML
+	private TextField m_CatConfTf;
+	
+	@FXML
+	private TextField m_RepeatTf;
+	
+	@FXML
+	private TextField m_numCatsTf;
+	
+	@FXML
+	private Button m_CategorizeBtn;
 
 	@FXML
 	private Button m_LoadBtn;

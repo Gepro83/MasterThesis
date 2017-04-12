@@ -13,6 +13,7 @@ public interface Concept extends Serializable{
 	public void setMark(String mark);
 	public void setScores(ConceptScores scores);
 	public ConceptScores Scores();
+	//The category of the concept. Is NULL if the concept was just discovered.
 	public BabelDomain Category();
 	public float CatConfidence();
 }

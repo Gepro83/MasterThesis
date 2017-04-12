@@ -37,13 +37,14 @@ public class tDatabase {
 	}
 
 	@Test
-	public void testDatabase() throws StorageException {
+	public void testDatabase() throws StorageException, IOException {
 		Database db;
-		db = new Database("jdbc:postgresql://localhost:5432/ConceptFinder", "Georg", "georg", m_ccreator);
+		db = new Database("jdbc:postgresql://localhost:5432/Test", "Georg", "georg", m_ccreator);
+		db.copyBabelDomains();
 		
 	}
 	
-	@Test
+/*	@Test
 	public void testcreate_deleteDataset() throws StorageException, IOException, InvalidConceptIDException, InvalidBabelSynsetIDException{
 		Database db;
 		db = new Database("jdbc:postgresql://localhost:5432/ConceptFinder", "Georg", "georg", m_ccreator);
@@ -251,5 +252,5 @@ public class tDatabase {
 		dss = db.getDatasets(null);
 		
 		System.out.println(dss.size());
-	}
+	}*/
 }

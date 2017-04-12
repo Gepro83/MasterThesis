@@ -65,6 +65,19 @@ public class Categorizer {
 	}
 	
 	/*
+	 * Runs the categorization algorithm on all active datasets.
+	 * Overwrites the previous categories of the datasets.
+	 */
+	public void categorize(){
+		for(Dataset dataset : m_Datasets){
+			dataset.clearCategories();
+			EnumMap<BabelDomain, Float> newCats = selectCategories(dataset);
+			for(BabelDomain cat : newCats.keySet())
+				dataset.addCategory(cat, newCats.get(cat));
+		}
+	}
+	
+	/*
 	 * Derives the categories of a dataset based on the categories and scores of its concepts
 	 * assumes that concepts have been scored and marked as a keyword concept
 	 * 
