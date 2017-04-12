@@ -183,8 +183,6 @@ public class Categorizer {
 		//Finally, the score gets weighted by the confidence of the concept belonging to the category
 		//also this weight is defined in the parameters
 		score = score * ( 1 + m_Configuration.getCategoryConfidenceWeight() * concept.CatConfidence());
-		//Normalize the score to an interval [0,1]
-		score = score / (m_Configuration.getKeywordsWeight() * (1 + m_Configuration.getCategoryConfidenceWeight()));
 		//Return the score
 		return score;
 	}
