@@ -36,7 +36,7 @@ public class tDatasetManager {
 		m.addDataset(ds);
 		ds = new Dataset(new RdfId("asdf2"));
 		m.addDataset(ds);
-		m.removeDataset(new RdfId("asdf2"));
+		//m.removeDataset(new RdfId("asdf2"));
 		assertEquals(1, m.Datasets().size());
 	}
 

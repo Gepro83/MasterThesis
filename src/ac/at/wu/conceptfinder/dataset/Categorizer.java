@@ -7,12 +7,14 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.DatasetSearchMask;
 import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
 /*
@@ -21,6 +23,7 @@ import it.uniroma1.lcl.babelnet.data.BabelDomain;
  * The algorithm is based on the categories of the concepts (synsets) that were
  * discovered in the dataset.  
  * Parameters of the algorithm are stored in a Configuration object.
+ * The class also provides some statistics about the managed datasets and categories.
  */
 public class Categorizer {
 
@@ -28,12 +31,14 @@ public class Categorizer {
 		m_Database = database;
 		m_Configuration = new Configuration();
 		m_Datasets = new DatasetManager();
+		m_CategoryToFrequency = new EnumMap<BabelDomain, Float>(BabelDomain.class);
 	}
 	
 	public Categorizer(Database database, Configuration conf){
 		m_Database = database;
 		m_Configuration = conf;
 		m_Datasets = new DatasetManager();
+		m_CategoryToFrequency = new EnumMap<BabelDomain, Float>(BabelDomain.class);
 	}
 	
 	/*
@@ -60,22 +65,55 @@ public class Categorizer {
 		for(Dataset dataset : m_Datasets)
 			if(dataset.Portal().equals(portal)) remove.add(dataset);
 		for(Dataset dataset : remove)
-			m_Datasets.removeDataset(dataset.ID());
+			m_Datasets.removeDataset(dataset);
+		updateFrequencies();
+		System.out.println(m_Datasets.Datasets().size());
 		return remove;
 	}
 	
 	/*
 	 * Runs the categorization algorithm on all active datasets.
 	 * Overwrites the previous categories of the datasets.
+	 * Updates the frequencies of categories. 
 	 */
 	public void categorize(){
+		//Discover the categories with the current settings and attach them to the datasets
 		for(Dataset dataset : m_Datasets){
 			dataset.clearCategories();
 			EnumMap<BabelDomain, Float> newCats = selectCategories(dataset);
 			for(BabelDomain cat : newCats.keySet())
 				dataset.addCategory(cat, newCats.get(cat));
 		}
+		updateFrequencies();
 	}
+	
+	/*
+	 * This is a map that maps all occurring categories of the active datasets to their corresponding frequencies.
+	 * The frequency of a category corresponds to the probability of a single dataset to belong to this category.
+	 */
+	public Map<BabelDomain, Float> CategoriesToFrequency(){ return Collections.unmodifiableMap(m_CategoryToFrequency); }
+	
+	/*
+	 * Calculates the average number of concepts per dataset in this object
+	 */
+	public float AverageConceptCount(){
+		int totalConcepts = 0;
+		for(Dataset dataset : m_Datasets)
+			totalConcepts += dataset.Concepts().size();
+		return (float) totalConcepts / m_Datasets.DatasetCount();
+	}
+	
+	/*
+	 * Calculates the number of distinct concepts (distinct conceptIDs to be exact) in the datasetts
+	 */
+	public int DistinctConceptsCount(){
+		HashSet<ConceptID> occurringConcepts = new HashSet<ConceptID>();
+		for(Dataset dataset : m_Datasets)
+			for(Concept concept : dataset.Concepts())
+				occurringConcepts.add(concept.ID());
+		return occurringConcepts.size();
+	}
+	
 	
 	/*
 	 * Derives the categories of a dataset based on the categories and scores of its concepts
@@ -83,7 +121,7 @@ public class Categorizer {
 	 * 
 	 * @return a map with the derived categories and a confidence score
 	 */
- 	private EnumMap<BabelDomain, Float> selectCategories(Dataset dataset){
+  	private EnumMap<BabelDomain, Float> selectCategories(Dataset dataset){
 		//Keep a map of potential top categories and their scores
 		EnumMap<BabelDomain, Float> potentialTopCategories = new EnumMap<BabelDomain, Float>(BabelDomain.class);
 		//First go through keyword concepts
@@ -187,7 +225,39 @@ public class Categorizer {
 		return score;
 	}
 	
+	/*
+	 * Updates the frequencies of categories
+	 */
+	private void updateFrequencies(){
+		//Count all occurring categories for all datasets
+		Map<BabelDomain, Integer> CategoryToCount = new EnumMap<BabelDomain, Integer>(BabelDomain.class);
+		for(Dataset dataset : m_Datasets){
+			for(BabelDomain dsCategory : dataset.Categories().keySet()){
+				if(!CategoryToCount.containsKey(dsCategory)){
+					CategoryToCount.put(dsCategory, 1);
+				}else{
+					int currentCount = CategoryToCount.get(dsCategory);
+					currentCount++;
+					CategoryToCount.replace(dsCategory, currentCount);
+				}
+			}
+		}
+		//The frequency of a category corresponds to the probability of a single dataset to belong to this category.
+		//Calculate the frequencies of each category by dividing the count by the total number of datasets
+		int datasetsCount = m_Datasets.DatasetCount();
+		//Frequencies are computed from scratch after every call of categorize()
+		m_CategoryToFrequency.clear();
+		for(BabelDomain category : CategoryToCount.keySet())
+			m_CategoryToFrequency.put(category, (float) CategoryToCount.get(category) / datasetsCount);
+	}
+	
 	private Configuration m_Configuration;
 	private final Database m_Database;
 	private final DatasetManager m_Datasets;
+	/*
+	 * A map that stores all categories that result of the current categorization 
+	 * and their frequencies within the datasets. This is updated after each call
+	 * of the categorization method.
+	 */
+	private EnumMap<BabelDomain, Float> m_CategoryToFrequency;
 }

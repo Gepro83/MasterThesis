@@ -2,10 +2,15 @@ package ac.at.wu.conceptfinder.userinterface;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Categorizer;
 import ac.at.wu.conceptfinder.dataset.Configuration;
 import ac.at.wu.conceptfinder.dataset.Dataset;
@@ -27,7 +32,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -52,7 +59,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
-public class CategorizerWindow implements Initializable, ResultCallback {
+public class CategorizerWindow implements Initializable, CategorizerCallback {
 
 	//Table cells for concepts are bold if they represent a concept found in the keywords
 	//Also if relevance score and coherence score are exactly 0 the the text color
@@ -84,7 +91,6 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 		//Set layout for UI
 		m_DatasetTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(5).multiply(3));
 		m_ConceptTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(5).multiply(2));
-		m_ConceptTable.prefHeightProperty().bind(m_MainPane.heightProperty());
 		m_PortalList.prefWidthProperty().bind(m_MainPane.widthProperty().divide(4));
 		
 		//Setting up the columns for the Dataset table
@@ -105,14 +111,7 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 		});
 		m_TitleColumn.setCellFactory(new Callback<TableColumn<Dataset, String>, TableCell<Dataset, String>>() {
 			   public TableCell<Dataset, String> call(TableColumn<Dataset, String> arg) {
-				   TableCell<Dataset, String> cell = new TableCell<>();
-		           Text text = new Text();
-		           text.setStyle("-fx-fill: -fx-text-background-color;");
-		           cell.setGraphic(text);
-		           cell.setPrefHeight(Control.USE_COMPUTED_SIZE);
-		           text.wrappingWidthProperty().bind(cell.widthProperty());
-		           text.textProperty().bind(cell.itemProperty());
-		           return cell ;
+				   return getTextWrappingCell();
 			   }
 		});
 		m_KeywordsColumn.setCellValueFactory(new Callback<CellDataFeatures<Dataset, String>, ObservableValue<String>>() {
@@ -131,8 +130,8 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 			   public ObservableValue<String> call(CellDataFeatures<Dataset, String> arg) {
 			       String categories = "";
 			       
-			       for(BabelDomain category : arg.getValue().Categories().keySet()){
-			    	   categories +=  "\u25B8 "  + category + System.getProperty("line.separator");
+			       for(Map.Entry<BabelDomain, Float> category : Globals.entriesSortedByValues(arg.getValue().Categories())){
+			    	   categories =  "\u25B8 "  + category.getKey() + System.getProperty("line.separator") + categories;
 			       }
 			       if(categories != "") categories = categories.substring(0, categories.length()-2);
 			       
@@ -143,8 +142,8 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 			   public ObservableValue<String> call(CellDataFeatures<Dataset, String> arg) {
 			       String categories = "";
 			       
-			       for(BabelDomain category : arg.getValue().Categories().keySet()){
-			    	   categories +=  "\u25B8 "  + arg.getValue().Categories().get(category) + System.getProperty("line.separator");
+			       for(Map.Entry<BabelDomain, Float> category : Globals.entriesSortedByValues(arg.getValue().Categories())){
+			    	   categories =  "\u25B8 "  + category.getValue() + System.getProperty("line.separator") + categories;
 			       }
 			       if(categories != "") categories = categories.substring(0, categories.length()-2);
 			       
@@ -289,7 +288,47 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 				m_Conceptsdata.clear();
 				//Remove the portal from the listview
 				m_PortalList.getItems().remove(selectedPortalIndex);
+				//Label for number of datasets
+				m_numDatasetsLabel.setText(m_Categorizer.Datasets().size() + " Datasets loaded.");
+		        //Refresh the statistics window
+				m_StatisticsWindow.refresh();
+				//Update the filter choicebox
+				m_FilterChoices.clear();
+				m_FilterChoices.addAll(m_Categorizer.CategoriesToFrequency().keySet());
 				}
+			
+		});
+		
+
+		//Setup the statistics window
+		//Load the new window
+		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("Statistics.fxml"));
+		Parent root1;
+		try {
+			root1 = (Parent) loader.load();
+		} catch (IOException e2) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setContentText("Cannot access statistics.fxml resource!");
+			alert.showAndWait();
+			return;
+		}
+        Stage stage = new Stage();
+        stage.initModality(Modality.NONE);
+        stage.initStyle(StageStyle.DECORATED);
+        stage.setTitle("Statistics");
+        stage.setScene(new Scene(root1));  
+        //Keep the statistics window
+        m_StatisticsWindow = loader.<StatisticsWindow>getController();
+        
+		
+		//The statistics button brings up the statistics window for the current categorization
+		m_StatsButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+		        //Populate UI of statistics window
+		        m_StatisticsWindow.refresh();
+			        
+			    stage.show();
+		    }
 		});
 		
 		//The categorize button performs the categorization of all active datasets using the settings entered in the textfields
@@ -314,12 +353,25 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 				m_Categorizer.categorize();
 				//Refresh the dataset table
 				m_DatasetTable.getItems().addAll(m_Categorizer.Datasets());
+				//Refresh statistics window
+				m_StatisticsWindow.refresh();
+				//Update the filter choicebox
+				m_FilterChoices.clear();
+				m_FilterChoices.addAll(m_Categorizer.CategoriesToFrequency().keySet());
 			}
 		});
 		
-		//Populate tables
+		//Setup the choice box
+		/*m_FilterChoice.setCellValueFactory(new Callback<CellDataFeatures<BabelDomain, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<BabelDomain, String> arg) {
+				   return new SimpleStringProperty(String.valueOf(arg.getValue().CatConfidence()));
+			   }
+		});*/
+		
+		//Populate tables and choicebox
 		m_DatasetTable.setItems(m_data);
 		m_ConceptTable.setItems(m_Conceptsdata);
+		m_FilterChoice.setItems(m_FilterChoices);
 	}
 	
 	@Override
@@ -341,6 +393,10 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 				currentPortals.add(portal);
 			}
 		}
+		//Reset label for number of datasets
+		m_numDatasetsLabel.setText(m_Categorizer.Datasets().size() + " Datasets loaded.");
+		//Refresh statistics window
+		m_StatisticsWindow.refresh();
 	}
 	
 	/*
@@ -349,6 +405,7 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 	public void setDatabase(Database db){
 		m_Database = db;
 		m_Categorizer = new Categorizer(m_Database);
+		m_StatisticsWindow.setCategorizer(m_Categorizer);
 	}
 	
 	/*
@@ -422,39 +479,47 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 		return true;
 	}
 	
+	/*
+	 * Creates a cell that wraps the text inside it
+	 */
+	private TableCell getTextWrappingCell(){
+		TableCell cell = new TableCell<>();
+        Text text = new Text();
+        text.setStyle("-fx-fill: -fx-text-background-color;");
+        cell.setGraphic(text);
+        cell.setPrefHeight(Control.USE_COMPUTED_SIZE);
+        text.wrappingWidthProperty().bind(cell.widthProperty());
+        text.textProperty().bind(cell.itemProperty());
+        return cell;
+	}
+	
+
+		
 	@FXML
 	private BorderPane m_MainPane;
-	
 	@FXML
 	private TextField m_MCSTf;
-	
 	@FXML
 	private TextField m_RelScoreTf;
-	
 	@FXML
 	private TextField m_CohScoreTf;
-	
 	@FXML
 	private TextField m_KeyTf;
-	
 	@FXML
 	private TextField m_CatConfTf;
-	
 	@FXML
 	private TextField m_RepeatTf;
-	
 	@FXML
 	private TextField m_numCatsTf;
 	
 	@FXML
 	private Button m_CategorizeBtn;
-
+	@FXML
+	private Button m_StatsButton;
 	@FXML
 	private Button m_LoadBtn;
-	
 	@FXML
 	private Button m_UnloadBtn;
-	
 	@FXML
 	private ListView<String> m_PortalList;
 	
@@ -472,7 +537,10 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 	private TableColumn<Dataset, String> m_CategoriesColumn;
 	@FXML
 	private TableColumn<Dataset, String> m_ScoreColumn;
-	
+	@FXML
+	private Label m_numDatasetsLabel;
+	@FXML
+	private ChoiceBox<BabelDomain> m_FilterChoice;
 	@FXML
 	private TableView<Concept> m_ConceptTable;
 	@FXML
@@ -485,10 +553,14 @@ public class CategorizerWindow implements Initializable, ResultCallback {
 	private TableColumn<Concept, String> m_ConceptRelScoreColumn;
 	@FXML
 	private TableColumn<Concept, String> m_ConceptCohScoreColumn;
-	
+
 
 	private final ObservableList<Dataset> m_data = FXCollections.observableArrayList();
 	private final ObservableList<Concept> m_Conceptsdata = FXCollections.observableArrayList();
+	private final ObservableList<BabelDomain> m_FilterChoices = FXCollections.observableArrayList();
+	
+	private StatisticsWindow m_StatisticsWindow;
+	
 	private Database m_Database;
 	private Categorizer m_Categorizer;
 	

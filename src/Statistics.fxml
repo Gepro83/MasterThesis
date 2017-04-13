@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.StatisticsWindow">
+   <children>
+      <Label fx:id="m_TitleLabel" text="Statistics for 0 datasets:">
+         <font>
+            <Font size="14.0" />
+         </font>
+         <VBox.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </VBox.margin>
+      </Label>
+      <GridPane>
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="253.0" minWidth="10.0" prefWidth="236.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="195.0" minWidth="10.0" prefWidth="119.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="290.0" minWidth="10.0" prefWidth="242.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label text="Average number of concepts per dataset:">
+               <padding>
+                  <Insets left="10.0" />
+               </padding>
+            </Label>
+            <Label fx:id="m_avgConceptsLabel" text="0" GridPane.columnIndex="1" />
+            <Label text="Number of distinct concepts:" GridPane.rowIndex="1">
+               <padding>
+                  <Insets left="10.0" />
+               </padding>
+            </Label>
+            <Label fx:id="m_numDistConceptsLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
+            </Label>
+            <Button fx:id="m_ApplyButton" mnemonicParsing="false" text="Apply weights" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Label text="Number of distinct categories:" GridPane.rowIndex="2">
+               <GridPane.margin>
+                  <Insets left="10.0" />
+               </GridPane.margin>
+            </Label>
+            <Label fx:id="m_DistCatsLabel" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+         </children>
+      </GridPane>
+      <HBox>
+         <children>
+            <TableView fx:id="m_CategoriesTable" prefHeight="378.0" prefWidth="340.0">
+               <columns>
+                  <TableColumn fx:id="m_CategoryColumn" prefWidth="229.0" text="Category" />
+                  <TableColumn fx:id="m_CatFreqColumn" minWidth="3.0" prefWidth="47.0" text="Freq" />
+               </columns>
+               <HBox.margin>
+                  <Insets bottom="10.0" left="10.0" right="5.0" top="10.0" />
+               </HBox.margin>
+            </TableView>
+            <TableView fx:id="m_ConceptsTable" prefHeight="378.0" prefWidth="456.0">
+               <columns>
+                  <TableColumn fx:id="m_ConceptNameColumn" prefWidth="109.0" text="Concept" />
+                  <TableColumn fx:id="m_ConceptFreqColumn" prefWidth="34.0" text="Freq" />
+                  <TableColumn fx:id="m_ConceptCountColumn" prefWidth="51.0" text="Count" />
+                  <TableColumn fx:id="m_AvgRelColumn" prefWidth="50.0" text="AvgRel" />
+                  <TableColumn fx:id="m_AvgCohColumn" prefWidth="51.0" text="AvgCoh" />
+                  <TableColumn fx:id="m_WeightColumn" prefWidth="65.0" text="Weight" />
+               </columns>
+               <HBox.margin>
+                  <Insets bottom="10.0" left="5.0" right="10.0" top="10.0" />
+               </HBox.margin>
+            </TableView>
+         </children>
+      </HBox>
+   </children>
+</VBox>

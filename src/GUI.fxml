@@ -26,21 +26,21 @@
                                  </VBox.margin>
                               </Label>
                               <Label text="MCS score [0,1]" />
-                              <TextField fx:id="m_MCSTf" prefHeight="25.0" prefWidth="137.0" />
+                              <TextField fx:id="m_MCSTf" prefHeight="25.0" prefWidth="137.0" text="0.3" />
                               <Label text="or">
                                  <font>
                                     <Font name="System Bold" size="14.0" />
                                  </font>
                               </Label>
                               <Label text="Relevance score *" />
-                              <TextField fx:id="m_RelScoreTf">
+                              <TextField fx:id="m_RelScoreTf" text="0.5">
                                  <VBox.margin>
                                     <Insets />
                                  </VBox.margin>
                               </TextField>
                               <Label text="+" />
                               <Label text="Coherence score *" />
-                              <TextField fx:id="m_CohScoreTf" prefHeight="25.0" prefWidth="162.0" />
+                              <TextField fx:id="m_CohScoreTf" prefHeight="25.0" prefWidth="162.0" text="0.5" />
                               <Label text="(Sum of weights must be in [0,1])" />
                            </children>
                         </VBox>
@@ -54,7 +54,7 @@
                         </Label>
                         <VBox alignment="CENTER">
                            <children>
-                              <TextField fx:id="m_KeyTf" prefHeight="25.0" prefWidth="82.0">
+                              <TextField fx:id="m_KeyTf" prefHeight="25.0" prefWidth="82.0" text="2">
                                  <VBox.margin>
                                     <Insets top="60.0" />
                                  </VBox.margin>
@@ -70,7 +70,7 @@
                               <Insets top="45.0" />
                            </HBox.margin>
                         </Label>
-                        <TextField fx:id="m_CatConfTf" prefHeight="25.0" prefWidth="54.0">
+                        <TextField fx:id="m_CatConfTf" prefHeight="25.0" prefWidth="54.0" text="1">
                            <HBox.margin>
                               <Insets top="45.0" />
                            </HBox.margin>
@@ -111,7 +111,7 @@
                   <HBox alignment="CENTER_LEFT">
                      <children>
                         <Label text="Repeated concepts are weighted by" />
-                        <TextField fx:id="m_RepeatTf" prefHeight="25.0" prefWidth="52.0">
+                        <TextField fx:id="m_RepeatTf" prefHeight="25.0" prefWidth="52.0" text="0.4">
                            <HBox.margin>
                               <Insets left="5.0" />
                            </HBox.margin>
@@ -121,7 +121,7 @@
                               <Insets left="20.0" />
                            </HBox.margin>
                         </Label>
-                        <TextField fx:id="m_numCatsTf" prefHeight="25.0" prefWidth="58.0">
+                        <TextField fx:id="m_numCatsTf" prefHeight="25.0" prefWidth="58.0" text="3">
                            <HBox.margin>
                               <Insets left="5.0" />
                            </HBox.margin>
@@ -132,6 +132,11 @@
                            </font>
                            <HBox.margin>
                               <Insets left="50.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="m_StatsButton" mnemonicParsing="false" text="Statistics">
+                           <HBox.margin>
+                              <Insets left="100.0" />
                            </HBox.margin>
                         </Button>
                      </children>
@@ -147,28 +152,53 @@
    <center>
       <HBox BorderPane.alignment="CENTER">
          <children>
-            <TableView fx:id="m_DatasetTable">
-              <columns>
-                <TableColumn fx:id="m_LinkColumn" editable="false" prefWidth="50.0" text="Dataset" />
-                <TableColumn fx:id="m_PortalColumn" editable="false" prefWidth="109.0" text="Portal" />
-                <TableColumn fx:id="m_TitleColumn" editable="false" prefWidth="109.0" text="Title" />
-                <TableColumn fx:id="m_KeywordsColumn" editable="false" prefWidth="109.0" text="Keywords" />
-                <TableColumn fx:id="m_CategoriesColumn" editable="false" prefWidth="109.0" text="Categories" />
-                <TableColumn fx:id="m_ScoreColumn" editable="false" prefWidth="42.0" text="Scores" />
-              </columns>
+            <VBox>
+               <children>
+                  <TableView fx:id="m_DatasetTable" prefHeight="460.0" prefWidth="555.0">
+                    <columns>
+                      <TableColumn fx:id="m_LinkColumn" editable="false" prefWidth="15.0" text="." />
+                      <TableColumn fx:id="m_PortalColumn" editable="false" prefWidth="110.0" text="Portal" />
+                      <TableColumn fx:id="m_TitleColumn" editable="false" prefWidth="130.0" text="Title" />
+                      <TableColumn fx:id="m_KeywordsColumn" editable="false" prefWidth="115.0" text="Keywords" />
+                      <TableColumn fx:id="m_CategoriesColumn" editable="false" prefWidth="150.0" text="Categories" />
+                      <TableColumn fx:id="m_ScoreColumn" editable="false" prefWidth="50.0" text="Scores" />
+                    </columns>
+                  </TableView>
+                  <HBox alignment="CENTER_LEFT" prefHeight="7.0" prefWidth="555.0">
+                     <children>
+                        <Label fx:id="m_numDatasetsLabel" text="0 Datasets loaded" />
+                        <Label text="Filter for:">
+                           <padding>
+                              <Insets left="100.0" />
+                           </padding>
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Label>
+                        <ChoiceBox fx:id="m_FilterChoice" prefWidth="250.0">
+                           <HBox.margin>
+                              <Insets left="5.0" />
+                           </HBox.margin>
+                        </ChoiceBox>
+                     </children>
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin>
+                  </HBox>
+               </children>
                <HBox.margin>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </HBox.margin>
-            </TableView>
+            </VBox>
             <VBox>
                <children>
-                  <TableView fx:id="m_ConceptTable">
+                  <TableView fx:id="m_ConceptTable" prefHeight="431.0" prefWidth="431.0">
                     <columns>
-                      <TableColumn fx:id="m_ConceptNameColumn" prefWidth="93.0" text="Name" />
-                        <TableColumn fx:id="m_ConceptCatColumn" prefWidth="112.0" text="Category" />
-                        <TableColumn fx:id="m_ConceptCatConfColumn" prefWidth="40.0" text="Conf" />
+                      <TableColumn fx:id="m_ConceptNameColumn" prefWidth="105.0" text="Name" />
                         <TableColumn fx:id="m_ConceptRelScoreColumn" prefWidth="40.0" text="Relev" />
                         <TableColumn fx:id="m_ConceptCohScoreColumn" prefWidth="40.0" text="Coher" />
+                        <TableColumn fx:id="m_ConceptCatColumn" prefWidth="157.0" text="Category" />
+                        <TableColumn fx:id="m_ConceptCatConfColumn" prefWidth="38.0" text="Conf" />
                     </columns>
                   </TableView>
                   <Label text="Keyword concept">

@@ -45,7 +45,7 @@ public class PortalSelectionWindow implements Initializable {
 		m_Portals.setItems(FXCollections.observableList(portals));
 	}
 	
-	public void registerResultListener(ResultCallback callback){
+	public void registerResultListener(CategorizerCallback callback){
 		m_Callback = callback;
 	}
 
@@ -60,5 +60,5 @@ public class PortalSelectionWindow implements Initializable {
 	@FXML
 	private Button m_LoadBtn;
 	
-	private ResultCallback m_Callback;
+	private CategorizerCallback m_Callback;
 }

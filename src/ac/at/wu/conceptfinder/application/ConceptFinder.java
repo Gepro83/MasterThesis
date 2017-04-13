@@ -258,7 +258,7 @@ public class ConceptFinder {
 			Set<BabelDomain> categories = selectCategories(dataset);
 			//Add the selected categories to the dataset
 			for(BabelDomain category : categories)
-				dataset.addCategory(category);
+				dataset.addCategory(category, 0);
 		}
 		System.out.println("Done!");
 	}

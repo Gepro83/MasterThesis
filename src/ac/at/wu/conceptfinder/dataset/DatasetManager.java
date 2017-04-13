@@ -44,13 +44,10 @@ public class DatasetManager implements Iterable<Dataset> {
 		m_datasets.clear();
 	}
 	
-	public void removeDataset(RdfId ID){
-		for(Dataset dataset : m_datasets){
-			if(dataset.ID().equals(ID)){
-				m_datasets.remove(dataset);
-				return;
-			}
-		}
+	public void removeDataset(Dataset ds){
+		m_datasets.remove(ds);
+
+		return;
 	}
 
 	public Set<Dataset> Datasets(){
@@ -80,6 +77,11 @@ public class DatasetManager implements Iterable<Dataset> {
 		
 		return ret;
 	}
+	
+	/*
+	 * returns the number of managed datasets
+	 */
+	public int DatasetCount(){ return m_datasets.size(); }
 	
 	private HashSet<Dataset> m_datasets;
 	
