@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.text.*?>
-<?import javafx.geometry.*?>
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="m_MainPane" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.CategorizerWindow">
+<BorderPane fx:id="m_MainPane" prefHeight="768.0" prefWidth="1149.0" xmlns="http://javafx.com/javafx/8.0.102" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.CategorizerWindow">
    <top>
       <HBox alignment="CENTER" BorderPane.alignment="CENTER">
          <children>
@@ -100,6 +107,11 @@
                                     <Insets top="10.0" />
                                  </VBox.margin>
                               </HBox>
+                              <Label fx:id="m_numDatasetsLabel" text="0 Datasets loaded">
+                                 <VBox.margin>
+                                    <Insets top="10.0" />
+                                 </VBox.margin>
+                              </Label>
                            </children>
                         </VBox>
                      </children>
@@ -154,25 +166,26 @@
          <children>
             <VBox>
                <children>
-                  <TableView fx:id="m_DatasetTable" prefHeight="460.0" prefWidth="555.0">
+                  <TableView fx:id="m_DatasetTable" prefHeight="385.0" prefWidth="634.0">
                     <columns>
                       <TableColumn fx:id="m_LinkColumn" editable="false" prefWidth="15.0" text="." />
                       <TableColumn fx:id="m_PortalColumn" editable="false" prefWidth="110.0" text="Portal" />
                       <TableColumn fx:id="m_TitleColumn" editable="false" prefWidth="130.0" text="Title" />
                       <TableColumn fx:id="m_KeywordsColumn" editable="false" prefWidth="115.0" text="Keywords" />
-                      <TableColumn fx:id="m_CategoriesColumn" editable="false" prefWidth="150.0" text="Categories" />
-                      <TableColumn fx:id="m_ScoreColumn" editable="false" prefWidth="50.0" text="Scores" />
+                      <TableColumn fx:id="m_CategoriesColumn" editable="false" prefWidth="177.0" text="Categories" />
+                      <TableColumn fx:id="m_ScoreColumn" editable="false" prefWidth="79.0" text="Scores" />
                     </columns>
                   </TableView>
                   <HBox alignment="CENTER_LEFT" prefHeight="7.0" prefWidth="555.0">
                      <children>
-                        <Label fx:id="m_numDatasetsLabel" text="0 Datasets loaded" />
-                        <Label text="Filter for:">
-                           <padding>
-                              <Insets left="100.0" />
-                           </padding>
+                        <Label fx:id="m_numDisplayedLabel" text="0 Datasets displayed">
                            <HBox.margin>
                               <Insets />
+                           </HBox.margin>
+                        </Label>
+                        <Label text="Filter for:">
+                           <HBox.margin>
+                              <Insets left="100.0" />
                            </HBox.margin>
                         </Label>
                         <ChoiceBox fx:id="m_FilterChoice" prefWidth="250.0">
@@ -192,13 +205,14 @@
             </VBox>
             <VBox>
                <children>
-                  <TableView fx:id="m_ConceptTable" prefHeight="431.0" prefWidth="431.0">
+                  <TableView fx:id="m_ConceptTable" prefHeight="383.0" prefWidth="498.0">
                     <columns>
-                      <TableColumn fx:id="m_ConceptNameColumn" prefWidth="105.0" text="Name" />
-                        <TableColumn fx:id="m_ConceptRelScoreColumn" prefWidth="40.0" text="Relev" />
-                        <TableColumn fx:id="m_ConceptCohScoreColumn" prefWidth="40.0" text="Coher" />
-                        <TableColumn fx:id="m_ConceptCatColumn" prefWidth="157.0" text="Category" />
-                        <TableColumn fx:id="m_ConceptCatConfColumn" prefWidth="38.0" text="Conf" />
+                      <TableColumn fx:id="m_ConceptNameColumn" prefWidth="89.0" text="Name" />
+                        <TableColumn fx:id="m_ConceptRelScoreColumn" prefWidth="59.0" text="Relev" />
+                        <TableColumn fx:id="m_ConceptCohScoreColumn" prefWidth="57.0" text="Coher" />
+                        <TableColumn fx:id="m_ConceptCatColumn" prefWidth="137.0" text="Category" />
+                        <TableColumn fx:id="m_ConceptCatConfColumn" prefWidth="61.0" text="Conf" />
+                        <TableColumn fx:id="m_ConceptWeightColumn" prefWidth="88.0" text="Weight" />
                     </columns>
                   </TableView>
                   <Label text="Keyword concept">

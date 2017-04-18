@@ -46,8 +46,6 @@ public class DatasetManager implements Iterable<Dataset> {
 	
 	public void removeDataset(Dataset ds){
 		m_datasets.remove(ds);
-
-		return;
 	}
 
 	public Set<Dataset> Datasets(){

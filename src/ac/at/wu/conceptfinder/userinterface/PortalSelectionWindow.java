@@ -32,7 +32,7 @@ public class PortalSelectionWindow implements Initializable {
 		m_LoadBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
 				if(m_Callback == null) return;
-				m_Callback.resultsReady(m_Portals.getSelectionModel().getSelectedItems());
+				m_Callback.portalResultsReady(m_Portals.getSelectionModel().getSelectedItems());
 				closeWindow();
 		    }
 		});

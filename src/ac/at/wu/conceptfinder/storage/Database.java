@@ -716,6 +716,7 @@ public class Database {
 			}
 			return babeldomainsMap;
 		} catch (SQLException e) {
+			e.printStackTrace();
 			throw new StorageException("Some SQL error happend when accessing activebabeldomains table ", StorageError.SQLError);
 		}
 		

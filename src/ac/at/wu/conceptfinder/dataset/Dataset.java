@@ -61,37 +61,15 @@ public class Dataset implements Serializable{
 	    if (obj == this)
 	            return true;
 	    Dataset dataset = (Dataset) obj;
-	    
 	    return new EqualsBuilder().
 	    		append(m_ID, dataset.ID()).
-	    		/*append(m_categories, dataset.Categories()).
-	    		append(m_concepts, dataset.Concepts()).
-	    		append(m_description, dataset.Description()).
-	    		append(m_distributions, dataset.Distributions()).
-	    		append(m_issued, dataset.Issued()).
-	    		append(m_keywords, dataset.Keywords()).
-	    		append(m_language, dataset.Language()).
-	    		append(m_modified, dataset.Modified()).
-	    		append(m_portal, dataset.Portal()).
-	    		append(m_title, dataset.Title()).*/
 	    		isEquals();
-		 
 	}
 	
 	@Override
 	public final int hashCode(){
 		return new HashCodeBuilder(17, 31).
-				append(m_ID).
-				append(m_categories).
-				append(m_concepts).
-				append(m_description).
-				append(m_distributions).
-				append(m_issued).
-				append(m_keywords).
-				append(m_language).
-				append(m_modified).
-				append(m_portal).
-				append(m_title).					
+				append(m_ID).				
 				toHashCode();
 	}
 	

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,56 @@ import it.uniroma1.lcl.babelnet.data.BabelDomain;
  * The class also provides some statistics about the managed datasets and categories.
  */
 public class Categorizer {
+	
+	/*
+	 * A class that encapsules the features a (type of) concept can have
+	 */
+	public class ConceptFeatures{
+		private String m_Name;
+		private float m_Frequency;
+		private BabelDomain m_Category;
+		private float m_CatConf;
+		private float m_AvgRelScore;
+		private float m_AvgCohScore;
+		private int m_Count;
+		private float m_Weight;
+		
+		ConceptFeatures(){
+			m_Name = "";
+			m_Frequency = 0;
+			m_Category = null;
+			m_CatConf = 0;
+			m_AvgRelScore = 0;
+			m_AvgCohScore = 0;
+			m_Count = 0;
+			m_Weight = 0;
+		}
+		
+		public String Name() { return m_Name; }
+		public float Frequency() { return m_Frequency; }
+		public BabelDomain Category() { return m_Category; }
+		public float CatConf() { return m_CatConf; }
+		public float AvgRelScore() { return m_AvgRelScore; }
+		public float AvgCohScore() { return m_AvgCohScore; }
+		public int Count() { return m_Count; }
+		public float Weight() { return m_Weight; }
+		
+		public void setName(String n) { m_Name = n; }
+		public void setFrequency(float f){ m_Frequency = f; }
+		public void setCategory(BabelDomain c){ m_Category = c; }
+		public void setCatConf(float c){ m_CatConf = c; }
+		public void setAvgRelScore(float s){ m_AvgRelScore = s; }
+		public void setAvgCohScore(float s){ m_AvgCohScore = s; }
+		public void setCount(int c) { m_Count = c; }
+		public void setWeight(float w){ m_Weight = w; }
+	}
 
 	public Categorizer(Database database){
 		m_Database = database;
 		m_Configuration = new Configuration();
 		m_Datasets = new DatasetManager();
 		m_CategoryToFrequency = new EnumMap<BabelDomain, Float>(BabelDomain.class);
+		m_ConceptIDsToFeatures = new HashMap<ConceptID, ConceptFeatures>();
 	}
 	
 	public Categorizer(Database database, Configuration conf){
@@ -39,6 +84,7 @@ public class Categorizer {
 		m_Configuration = conf;
 		m_Datasets = new DatasetManager();
 		m_CategoryToFrequency = new EnumMap<BabelDomain, Float>(BabelDomain.class);
+		m_ConceptIDsToFeatures = new HashMap<ConceptID, ConceptFeatures>();
 	}
 	
 	/*
@@ -47,6 +93,12 @@ public class Categorizer {
 	public Set<Dataset> Datasets(){ return Collections.unmodifiableSet(m_Datasets.Datasets()); }
 	//The current Configuration of this Categorizer 
 	public Configuration Configuration(){ return m_Configuration; }
+	public Map<ConceptID, ConceptFeatures> ConceptIDsToFeatures(){ return Collections.unmodifiableMap(m_ConceptIDsToFeatures); }
+	/*
+	 * This is a map that maps all occurring categories of the active datasets to their corresponding frequencies.
+	 * The frequency of a category corresponds to the probability of a single dataset to belong to this category.
+	 */
+	public Map<BabelDomain, Float> CategoriesToFrequency(){ return Collections.unmodifiableMap(m_CategoryToFrequency); }
 	
 	/*
 	 * Adds all datasets of the portal to this Categorizer.
@@ -54,6 +106,7 @@ public class Categorizer {
 	 */
 	public void loadPortal(String portal) throws StorageException{
 		m_Datasets.addDatasets(m_Database.getDatasets(new DatasetSearchMask(null, new String[]{portal})));
+		calcConceptIDsToFeatures();
 	}
 	
 	/*
@@ -66,8 +119,8 @@ public class Categorizer {
 			if(dataset.Portal().equals(portal)) remove.add(dataset);
 		for(Dataset dataset : remove)
 			m_Datasets.removeDataset(dataset);
-		updateFrequencies();
-		System.out.println(m_Datasets.Datasets().size());
+		updateCategoryFrequencies();
+		calcConceptIDsToFeatures();
 		return remove;
 	}
 	
@@ -84,14 +137,10 @@ public class Categorizer {
 			for(BabelDomain cat : newCats.keySet())
 				dataset.addCategory(cat, newCats.get(cat));
 		}
-		updateFrequencies();
+		updateCategoryFrequencies();
 	}
 	
-	/*
-	 * This is a map that maps all occurring categories of the active datasets to their corresponding frequencies.
-	 * The frequency of a category corresponds to the probability of a single dataset to belong to this category.
-	 */
-	public Map<BabelDomain, Float> CategoriesToFrequency(){ return Collections.unmodifiableMap(m_CategoryToFrequency); }
+
 	
 	/*
 	 * Calculates the average number of concepts per dataset in this object
@@ -104,7 +153,7 @@ public class Categorizer {
 	}
 	
 	/*
-	 * Calculates the number of distinct concepts (distinct conceptIDs to be exact) in the datasetts
+	 * Calculates the number of distinct concepts (distinct conceptIDs to be exact) in the datasets
 	 */
 	public int DistinctConceptsCount(){
 		HashSet<ConceptID> occurringConcepts = new HashSet<ConceptID>();
@@ -114,10 +163,65 @@ public class Categorizer {
 		return occurringConcepts.size();
 	}
 	
+	/*
+	 * Calculates the map that contains all distinct concepts (IDs) that occur in the currently active datasets
+	 * together with their features.
+	 * (Re)initializes the weights of all concepts to 1.
+	 */
+	private void calcConceptIDsToFeatures(){
+		m_ConceptIDsToFeatures.clear();
+		//Go through all active datasets
+		for(Dataset dataset : m_Datasets){
+			//Keep track of concepts that have already occurred in the dataset
+			HashSet<ConceptID> occurredConcepts = new HashSet<ConceptID>();
+			//For every concept of each datasets
+			for(Concept concept : dataset.Concepts()){
+				//If the concept id is not yet in the map
+				if(!m_ConceptIDsToFeatures.containsKey(concept.ID())){
+					//Set the appropriate concept features 
+					ConceptFeatures features = new ConceptFeatures();
+					features.setName(concept.Name());
+					features.setFrequency(1.0f / m_Datasets.DatasetCount());
+					features.setAvgCohScore(concept.Scores().CoherenceScore());
+					features.setAvgRelScore(concept.Scores().RelevanceScore());
+					features.setCategory(concept.Category());
+					features.setCatConf(concept.CatConfidence());
+					features.setCount(1);
+					//All concepts are initially weighted evenly
+					features.setWeight(1);
+					//add it to the map
+					m_ConceptIDsToFeatures.put(concept.ID(), features);
+					//This concept has now occurred in this dataset
+					occurredConcepts.add(concept.ID());
+				}
+				//If the concept already exists in the map
+				else{
+					//Adjust the frequency, count and average scores
+					ConceptFeatures features = m_ConceptIDsToFeatures.get(concept.ID());
+					//The frequency is only increased the first time a concept occurred within a dataset		
+					if(!occurredConcepts.contains(concept.ID())){
+						features.setFrequency(features.Frequency() + 1.0f / m_Datasets.DatasetCount());
+						occurredConcepts.add(concept.ID());
+					}
+					features.setCount(features.Count() + 1);
+					features.setAvgCohScore(
+							(features.AvgCohScore() * (features.Count()-1)  + concept.Scores().CoherenceScore()) 
+							/ (float) features.Count()
+							);
+					features.setAvgRelScore(
+							(features.AvgRelScore() * (features.Count()-1)  + concept.Scores().RelevanceScore()) 
+							/ (float) features.Count()
+							);
+				}
+			}
+		}
+	}
+	
 	
 	/*
 	 * Derives the categories of a dataset based on the categories and scores of its concepts
-	 * assumes that concepts have been scored and marked as a keyword concept
+	 * Assumes that concepts have been scored, marked as a keyword concept and
+	 * the map of concept ids to features has been filled.
 	 * 
 	 * @return a map with the derived categories and a confidence score
 	 */
@@ -218,9 +322,11 @@ public class Categorizer {
 		//If it is a keyword Concept weight it as defined in the parameters
 		if(keywordConcept)
 			score *= m_Configuration.getKeywordsWeight();
-		//Finally, the score gets weighted by the confidence of the concept belonging to the category
+		//The score gets weighted by the confidence of the concept belonging to the category
 		//also this weight is defined in the parameters
 		score = score * ( 1 + m_Configuration.getCategoryConfidenceWeight() * concept.CatConfidence());
+		//Finally, the score gets weighted by the weight of this concept type, which is determined by the concept id.
+		score *= m_ConceptIDsToFeatures.get(concept.ID()).Weight();
 		//Return the score
 		return score;
 	}
@@ -228,7 +334,7 @@ public class Categorizer {
 	/*
 	 * Updates the frequencies of categories
 	 */
-	private void updateFrequencies(){
+	private void updateCategoryFrequencies(){
 		//Count all occurring categories for all datasets
 		Map<BabelDomain, Integer> CategoryToCount = new EnumMap<BabelDomain, Integer>(BabelDomain.class);
 		for(Dataset dataset : m_Datasets){
@@ -260,4 +366,9 @@ public class Categorizer {
 	 * of the categorization method.
 	 */
 	private EnumMap<BabelDomain, Float> m_CategoryToFrequency;
+	/*
+	 * A map that contains all distinct concepts (IDs) that occur in the currently active datasets
+	 * together with their features
+	 */
+	private Map<ConceptID, ConceptFeatures> m_ConceptIDsToFeatures;
 }

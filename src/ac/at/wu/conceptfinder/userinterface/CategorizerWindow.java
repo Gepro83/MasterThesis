@@ -1,14 +1,11 @@
 package ac.at.wu.conceptfinder.userinterface;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Categorizer;
@@ -18,6 +15,8 @@ import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -39,10 +38,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.Clipboard;
@@ -58,12 +56,17 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Callback;
+import javafx.util.Duration;
 
 public class CategorizerWindow implements Initializable, CategorizerCallback {
 
-	//Table cells for concepts are bold if they represent a concept found in the keywords
-	//Also if relevance score and coherence score are exactly 0 the the text color
-	//is set to blue to indicate that this concept was found by the MCS heuristic
+	/*
+	 * Table cells for concepts are bold if they represent a concept found in the keywords
+	 * Also if relevance score and coherence score are exactly 0 the the text color
+	 * is set to blue to indicate that this concept was found by the MCS heuristic
+	 * The tooltip of a cell displays its contents.
+	 * 
+	 */
 	private final class ConceptTableCell extends TableCell<Concept, String>{
 			   
 		@Override
@@ -82,6 +85,9 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	        		this.setTextFill(Color.BLUE);
 	        }
 	        this.setText(item);
+	        Tooltip tooltip = new Tooltip(item);
+	        hackTooltipStartTiming(tooltip);
+	        this.setTooltip(tooltip);
 	   }
 	}
 	
@@ -150,7 +156,6 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 			       return new SimpleStringProperty(categories);
 			   }
 		});
-		
 		//Setting up the columns for the Concept table
 		m_ConceptNameColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
 				   public ObservableValue<String> call(CellDataFeatures<Concept, String> arg) {
@@ -210,7 +215,19 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 					   return new ConceptTableCell();
 			   }
 		});
-
+		m_ConceptWeightColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<Concept, String> arg) {
+				   //Remove digist after 2. decimal place
+				   float weight = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue().ID()).Weight();
+				   weight = Math.round(weight*100)/100.0f;
+				   return new SimpleStringProperty(String.valueOf(weight));
+			   }
+		});
+		m_ConceptWeightColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
+			   public TableCell<Concept, String> call(TableColumn<Concept, String> arg) {
+					   return new ConceptTableCell();
+			   }
+		});
 		
 		//Ctrl + C in Dataset table copies dataset id to clipboard
 		m_DatasetTable.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -277,13 +294,13 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		//The unload button removes the selected portal from the list and removes all datasets belonging to the corresponding portal
 		m_UnloadBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
+				System.out.println("remove");
 				int selectedPortalIndex = m_PortalList.getSelectionModel().getSelectedIndex();
 				//Only do something if a portal is selected
 				if(selectedPortalIndex < 0) return;
 				//Remove the portal from the categorizer and the tableview
-				m_DatasetTable.getItems().removeAll(
-						m_Categorizer.unloadPortal(m_PortalList.getItems().get(selectedPortalIndex))
-				);
+				m_data.removeAll(m_Categorizer.unloadPortal(m_PortalList.getItems().get(selectedPortalIndex)));
+				m_DatasetTable.refresh();
 				//Clear the concept tableview
 				m_Conceptsdata.clear();
 				//Remove the portal from the listview
@@ -293,13 +310,10 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		        //Refresh the statistics window
 				m_StatisticsWindow.refresh();
 				//Update the filter choicebox
-				m_FilterChoices.clear();
-				m_FilterChoices.addAll(m_Categorizer.CategoriesToFrequency().keySet());
+				updateFilterChoiceBox();
 				}
 			
 		});
-		
-
 		//Setup the statistics window
 		//Load the new window
 		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("Statistics.fxml"));
@@ -319,14 +333,14 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
         stage.setScene(new Scene(root1));  
         //Keep the statistics window
         m_StatisticsWindow = loader.<StatisticsWindow>getController();
-        
+        //Register the callback with the statistics window
+        m_StatisticsWindow.registerResultListener(thisWindow);
 		
 		//The statistics button brings up the statistics window for the current categorization
 		m_StatsButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
 		        //Populate UI of statistics window
-		        m_StatisticsWindow.refresh();
-			        
+		        m_StatisticsWindow.refresh();   
 			    stage.show();
 		    }
 		});
@@ -345,28 +359,40 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 				conf.setCategoryConfidenceWeight(Float.parseFloat(m_CatConfTf.getText()));
 				conf.setRepeatedConceptWeight(Float.parseFloat(m_RepeatTf.getText()));
 				conf.setNumOutputCategories(Integer.parseInt(m_numCatsTf.getText()));
-				//Clear the dataset table
-				m_DatasetTable.getItems().removeAll(m_Categorizer.Datasets());
 				//Clear the concept tableview
 				m_Conceptsdata.clear();
 				//Run the categorization algorithm
 				m_Categorizer.categorize();
 				//Refresh the dataset table
-				m_DatasetTable.getItems().addAll(m_Categorizer.Datasets());
+				m_DatasetTable.refresh();
 				//Refresh statistics window
 				m_StatisticsWindow.refresh();
 				//Update the filter choicebox
-				m_FilterChoices.clear();
-				m_FilterChoices.addAll(m_Categorizer.CategoriesToFrequency().keySet());
+				updateFilterChoiceBox();
 			}
 		});
 		
-		//Setup the choice box
-		/*m_FilterChoice.setCellValueFactory(new Callback<CellDataFeatures<BabelDomain, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<BabelDomain, String> arg) {
-				   return new SimpleStringProperty(String.valueOf(arg.getValue().CatConfidence()));
-			   }
-		});*/
+		//When a filter is selected in the choicebox the tableview is update accordingly
+		m_FilterChoice.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+		      @Override
+		      public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
+		    	if(newVal == null){
+			    	m_numDisplayedLabel.setText(m_data.size() + " Datasets displayed");
+			    	return;
+			    }
+		    	m_data.clear();
+		      	
+		      	if(newVal.equals("All")){
+	      			m_data.addAll(m_Categorizer.Datasets());	
+		      	}else{
+			      	//Only display datasets that belong to the selected category
+			      	for(Dataset dataset : m_Categorizer.Datasets())
+			      		if(dataset.Categories().containsKey(BabelDomain.valueOf(newVal)))
+			      			m_data.add(dataset);
+			    }
+		      	m_numDisplayedLabel.setText(m_data.size() + " Datasets displayed");
+		      }
+		});
 		
 		//Populate tables and choicebox
 		m_DatasetTable.setItems(m_data);
@@ -375,7 +401,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	}
 	
 	@Override
-	public void resultsReady(List<String> list) {
+	public void portalResultsReady(List<String> list) {
 		//Load all portals in the list of selected portals
 		List<String> currentPortals = m_PortalList.getItems();
 		for(String portal : list){
@@ -397,6 +423,13 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		m_numDatasetsLabel.setText(m_Categorizer.Datasets().size() + " Datasets loaded.");
 		//Refresh statistics window
 		m_StatisticsWindow.refresh();
+		//update filter choicebox
+		updateFilterChoiceBox();
+	}
+	
+	@Override
+	public void categorize(){
+		m_CategorizeBtn.fire();
 	}
 	
 	/*
@@ -493,7 +526,34 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
         return cell;
 	}
 	
+	/*
+	 * Updates the filter choice box to the currently available categories plus an "All" option
+	 */
+	private void updateFilterChoiceBox(){
+		m_FilterChoices.clear();
+		m_FilterChoices.add("All");
+		for(BabelDomain cat : m_Categorizer.CategoriesToFrequency().keySet())
+			m_FilterChoices.add(cat.toString());
+		//Select "All" filter as a default
+		m_FilterChoice.getSelectionModel().select(0);
+	}
 
+	private void hackTooltipStartTiming(Tooltip tooltip) {
+	    try {
+	        Field fieldBehavior = tooltip.getClass().getDeclaredField("BEHAVIOR");
+	        fieldBehavior.setAccessible(true);
+	        Object objBehavior = fieldBehavior.get(tooltip);
+
+	        Field fieldTimer = objBehavior.getClass().getDeclaredField("activationTimer");
+	        fieldTimer.setAccessible(true);
+	        Timeline objTimer = (Timeline) fieldTimer.get(objBehavior);
+
+	        objTimer.getKeyFrames().clear();
+	        objTimer.getKeyFrames().add(new KeyFrame(new Duration(250)));
+	    } catch (Exception e) {
+	        
+	    }
+	}
 		
 	@FXML
 	private BorderPane m_MainPane;
@@ -522,6 +582,8 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	private Button m_UnloadBtn;
 	@FXML
 	private ListView<String> m_PortalList;
+	@FXML
+	private Label m_numDatasetsLabel;
 	
 	@FXML
 	private TableView<Dataset> m_DatasetTable;
@@ -538,9 +600,9 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	@FXML
 	private TableColumn<Dataset, String> m_ScoreColumn;
 	@FXML
-	private Label m_numDatasetsLabel;
+	private Label m_numDisplayedLabel;
 	@FXML
-	private ChoiceBox<BabelDomain> m_FilterChoice;
+	private ChoiceBox<String> m_FilterChoice;
 	@FXML
 	private TableView<Concept> m_ConceptTable;
 	@FXML
@@ -553,11 +615,12 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	private TableColumn<Concept, String> m_ConceptRelScoreColumn;
 	@FXML
 	private TableColumn<Concept, String> m_ConceptCohScoreColumn;
-
+	@FXML
+	private TableColumn<Concept, String> m_ConceptWeightColumn;
 
 	private final ObservableList<Dataset> m_data = FXCollections.observableArrayList();
 	private final ObservableList<Concept> m_Conceptsdata = FXCollections.observableArrayList();
-	private final ObservableList<BabelDomain> m_FilterChoices = FXCollections.observableArrayList();
+	private final ObservableList<String> m_FilterChoices = FXCollections.observableArrayList();
 	
 	private StatisticsWindow m_StatisticsWindow;
 	

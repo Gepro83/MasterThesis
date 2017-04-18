@@ -18,7 +18,7 @@ public class GUI extends Application {
 	private static Database m_database;
 	
     public static void main(String[] args) throws StorageException {
-    	m_database = new Database("jdbc:postgresql://localhost:5432/Test", "Georg", "georg", new BabelConceptCreator());
+    	m_database = new Database("jdbc:postgresql://localhost:5432/Test", "postgres", "postgrespass", new BabelConceptCreator());
         launch(args);
      }
 
@@ -27,7 +27,7 @@ public class GUI extends Application {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("GUI.fxml"));
         Parent root = fxmlLoader.load();
         
-        Scene scene = new Scene(root, 1024, 768);
+        Scene scene = new Scene(root, 1149, 768);
     
         primaryStage.setTitle("FXML Welcome");
         primaryStage.setScene(scene);
