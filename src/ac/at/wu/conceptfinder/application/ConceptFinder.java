@@ -63,8 +63,11 @@ public class ConceptFinder {
 	public void loadDatasets(DatasetSearchMask mask) throws StorageException{
 		System.out.println("Loading datasets from database...");
 		Set<Dataset> loadedDatasets = m_database.getDatasets(mask);
-		for(Dataset loadedSet : loadedDatasets)
+		for(Dataset loadedSet : loadedDatasets){
 			m_datasetManager.addDataset(loadedSet);
+			ConceptText cText = new ConceptText(selectConceptText(loadedSet));
+			m_datasetIdToConceptText.put(loadedSet.ID(), cText);
+		}
 		System.out.println("Done!");
 	}
 	
@@ -114,10 +117,11 @@ public class ConceptFinder {
 		for(Dataset dataset : m_datasetManager){
 			System.out.println("Discovering concepts for dataset: " + dataset.ID().value() + " lang: " + dataset.Language().toString());
 			ConceptText currentText = m_datasetIdToConceptText.get(dataset.ID());
+			currentText.SetLanguage(dataset.Language());
 			m_conceptDetector.discoverConcepts(currentText, "1", Globals.KEYWORDS_MARKER);
 			
 			for(Concept concept : currentText.Concepts()){
-				if(!concept.Mark().equals("1")) concept.setMark("0");
+				if(!concept.Mark().startsWith("1")) concept.setMark("0" + concept.Mark());
 				dataset.addConcept(concept);
 			}
 		}

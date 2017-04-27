@@ -48,6 +48,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -95,8 +96,10 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	public void initialize(URL arg0, ResourceBundle arg1) {
 	
 		//Set layout for UI
-		m_DatasetTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(5).multiply(3));
-		m_ConceptTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(5).multiply(2));
+		m_DatasetTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(40).multiply(23));
+		m_DatasetTable.prefHeightProperty().bind(m_MainPane.heightProperty().subtract(m_TopHBox.heightProperty()));
+		m_ConceptTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(40).multiply(17));
+		m_ConceptTable.prefHeightProperty().bind(m_MainPane.heightProperty().subtract(m_TopHBox.heightProperty()));
 		m_PortalList.prefWidthProperty().bind(m_MainPane.widthProperty().divide(4));
 		
 		//Setting up the columns for the Dataset table
@@ -557,6 +560,8 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		
 	@FXML
 	private BorderPane m_MainPane;
+	@FXML
+	private HBox m_TopHBox;
 	@FXML
 	private TextField m_MCSTf;
 	@FXML

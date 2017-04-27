@@ -2,12 +2,14 @@ package ac.at.wu.conceptfinder.userinterface;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Categorizer;
 import ac.at.wu.conceptfinder.dataset.Configuration;
+import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.dataset.Categorizer.ConceptFeatures;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
@@ -22,6 +24,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -29,6 +32,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TablePosition;
@@ -41,6 +46,13 @@ public class StatisticsWindow implements Initializable {
 		//Populate tables
 		m_CategoriesTable.setItems(m_CategoriesData);
 		m_ConceptsTable.setItems(m_ConceptsData);
+		
+		//Set dimensions of tables
+		m_CategoriesTable.prefWidthProperty().bind(m_BaseVBox.widthProperty().divide(24).multiply(8));
+		m_CategoriesTable.prefHeightProperty().bind(m_BaseVBox.heightProperty().subtract(m_TitleLabel.heightProperty().add(m_TopGrid.heightProperty())));
+		m_ConceptsTable.prefWidthProperty().bind(m_BaseVBox.widthProperty().divide(24).multiply(16));
+		m_ConceptsTable.prefHeightProperty().bind(m_BaseVBox.heightProperty().subtract(m_TitleLabel.heightProperty().add(m_TopGrid.heightProperty())));
+		
 		
 		//Setup columns for categories table
 		m_CategoryColumn.setCellValueFactory(new Callback<CellDataFeatures<BabelDomain, String>, ObservableValue<String>>() {
@@ -64,7 +76,6 @@ public class StatisticsWindow implements Initializable {
 		
 		//Setup columns for concepts table
 		m_ConceptsTable.setEditable(true);
-		m_ConceptFreqColumn.setEditable(false);
 		m_ConceptNameColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
 			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
 				   String name = "";
@@ -87,7 +98,13 @@ public class StatisticsWindow implements Initializable {
 			       return new SimpleStringProperty(freq);
 			   }
 		});
-		m_ConceptCatColumn.setEditable(false);
+		//Categories and category confidence can be edited by the user
+		m_ConceptCatColumn.setEditable(true);
+		m_ConceptCatColumn.setCellFactory(new Callback<TableColumn<ConceptID, String>, TableCell<ConceptID, String>>() {
+            public TableCell<ConceptID, String> call(TableColumn<ConceptID, String> p) {
+                return new ChoiceEditingCell();
+             }
+        });
 		m_ConceptCatColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
 			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
 				   String cat = "";
@@ -98,7 +115,7 @@ public class StatisticsWindow implements Initializable {
 			       return new SimpleStringProperty(cat);
 			   }
 		});
-		m_ConceptCatConfColumn.setEditable(false);
+		m_ConceptCatConfColumn.setEditable(true);
 		m_ConceptCatConfColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
 			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
 				   String conf = "";
@@ -108,6 +125,33 @@ public class StatisticsWindow implements Initializable {
 			       return new SimpleStringProperty(conf);
 			   }
 		});
+		m_ConceptCatConfColumn.setCellFactory(new Callback<TableColumn<ConceptID, String>, TableCell<ConceptID, String>>() {
+            public TableCell<ConceptID, String> call(TableColumn<ConceptID, String> p) {
+                return new TextEditingCell();
+             }
+        });
+		m_ConceptCatConfColumn.setOnEditCommit(
+	            new EventHandler<CellEditEvent<ConceptID, String>>() {
+	                @Override
+	                public void handle(CellEditEvent<ConceptID, String> t) {
+	                	float newConf;
+	                	try{
+	                		newConf = Float.parseFloat(t.getNewValue());
+	                	}catch (NumberFormatException e){
+	                		Alert alert = new Alert(AlertType.ERROR);
+	                		alert.setContentText("Please enter a number!");
+	                		alert.showAndWait();
+	                		m_ConceptsTable.refresh();
+	                		return;
+	                	}
+	                    m_Categorizer.ConceptIDsToFeatures().get(
+	                    		((ConceptID) t.getTableView().getItems().get(
+	                        t.getTablePosition().getRow())
+	                        ))
+	                    .setCatConf(newConf);
+	                }
+	             }
+	        );   
 		m_AvgRelColumn.setEditable(false);
 		m_AvgRelColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
 			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
@@ -138,7 +182,7 @@ public class StatisticsWindow implements Initializable {
 		m_WeightColumn.setEditable(true);	             
 	    m_WeightColumn.setCellFactory(new Callback<TableColumn<ConceptID, String>, TableCell<ConceptID, String>>() {
             public TableCell<ConceptID, String> call(TableColumn<ConceptID, String> p) {
-                return new EditingCell();
+                return new TextEditingCell();
              }
         });
 	    m_WeightColumn.setOnEditCommit(
@@ -184,13 +228,9 @@ public class StatisticsWindow implements Initializable {
 	 * Set the categorizer object this window displays statistics for.
 	 */
 	
-	public void setCategorizer(Categorizer cat){ 
-		m_Categorizer = cat; 
-	}
+	public void setCategorizer(Categorizer cat){ m_Categorizer = cat; }
 	
-	public void registerResultListener(CategorizerCallback callback){
-		m_Callback = callback;
-	}
+	public void registerResultListener(CategorizerCallback callback){ m_Callback = callback; }
 	
 	/*
 	 * (Re)populates the UI elements.
@@ -223,6 +263,10 @@ public class StatisticsWindow implements Initializable {
 			m_ConceptsData.add(0, conceptIdToFrequency.getKey());
 	}
 
+	@FXML
+	private VBox m_BaseVBox;
+	@FXML
+	private GridPane m_TopGrid; 
 	@FXML
 	private Label m_TitleLabel;
 	@FXML
@@ -260,15 +304,16 @@ public class StatisticsWindow implements Initializable {
 
 	private final ObservableList<BabelDomain> m_CategoriesData = FXCollections.observableArrayList();
 	private final ObservableList<ConceptID> m_ConceptsData = FXCollections.observableArrayList();
+	private final HashSet<ConceptID> m_MarkedConcepts = new HashSet<ConceptID>();
 
 	private Categorizer m_Categorizer;
 	private CategorizerCallback m_Callback;
 	
-	class EditingCell extends TableCell<ConceptID, String> {
+	class TextEditingCell extends TableCell<ConceptID, String> {
 		 
         private TextField textField;
  
-        public EditingCell() {
+        public TextEditingCell() {
         }
  
         @Override
@@ -287,6 +332,12 @@ public class StatisticsWindow implements Initializable {
             super.cancelEdit();
  
             setText((String) getItem());
+            setGraphic(null);
+        }
+        
+        @Override
+        public void commitEdit(String value) {
+            super.commitEdit(value);
             setGraphic(null);
         }
  
@@ -327,5 +378,57 @@ public class StatisticsWindow implements Initializable {
             return getItem() == null ? "" : getItem().toString();
         }
     }
+	
+	class ChoiceEditingCell extends TableCell<ConceptID, String> {
+		 
+        private ChoiceBox<String> m_ChoiceBox = new ChoiceBox<String>();
 
+        public ChoiceEditingCell() {
+
+        	for(BabelDomain cat : BabelDomain.values())
+        		m_ChoiceBox.getItems().add(cat.toString());
+        	m_ChoiceBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+  		      @Override
+  		      public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
+  			      	if(newVal == null) return;
+  			      	ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get((ConceptID) getTableRow().getItem());
+  			      	cellFeatures.setCategory(BabelDomain.valueOf(newVal));
+  			      	m_ConceptsTable.refresh();
+  		      }
+  			});
+        }
+        
+        @Override
+        public void commitEdit(String value) {
+            super.commitEdit(value);
+            setGraphic(null);
+        }
+ 
+        @Override
+        public void startEdit() {
+            super.startEdit();
+            String value = getItem();
+            if (value != null) {
+                setGraphic(m_ChoiceBox);
+                setText(null);
+            }
+        }
+ 
+        @Override
+        public void cancelEdit() {
+            super.cancelEdit();
+            setText(getItem().toString());
+            setGraphic(null);
+        }
+ 
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            if (item == null || empty) {
+                setText(null);
+            } else {
+                setText(item);
+            }
+        }
+    }
 }

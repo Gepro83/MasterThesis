@@ -27,7 +27,7 @@ public class GUI extends Application {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("GUI.fxml"));
         Parent root = fxmlLoader.load();
         
-        Scene scene = new Scene(root, 1149, 768);
+        Scene scene = new Scene(root, 1250, 900);
     
         primaryStage.setTitle("FXML Welcome");
         primaryStage.setScene(scene);

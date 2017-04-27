@@ -38,7 +38,7 @@ public class Categorizer {
 		private float m_CatConf;
 		private float m_AvgRelScore;
 		private float m_AvgCohScore;
-		private int m_Count;
+		private int m_NonMCSCount;
 		private float m_Weight;
 		
 		ConceptFeatures(){
@@ -48,7 +48,7 @@ public class Categorizer {
 			m_CatConf = 0;
 			m_AvgRelScore = 0;
 			m_AvgCohScore = 0;
-			m_Count = 0;
+			m_NonMCSCount = 0;
 			m_Weight = 0;
 		}
 		
@@ -58,7 +58,7 @@ public class Categorizer {
 		public float CatConf() { return m_CatConf; }
 		public float AvgRelScore() { return m_AvgRelScore; }
 		public float AvgCohScore() { return m_AvgCohScore; }
-		public int Count() { return m_Count; }
+		public int NonMCSCount() { return m_NonMCSCount; }
 		public float Weight() { return m_Weight; }
 		
 		public void setName(String n) { m_Name = n; }
@@ -67,7 +67,7 @@ public class Categorizer {
 		public void setCatConf(float c){ m_CatConf = c; }
 		public void setAvgRelScore(float s){ m_AvgRelScore = s; }
 		public void setAvgCohScore(float s){ m_AvgCohScore = s; }
-		public void setCount(int c) { m_Count = c; }
+		public void setNonMCSCount(int c) { m_NonMCSCount = c; }
 		public void setWeight(float w){ m_Weight = w; }
 	}
 
@@ -182,11 +182,14 @@ public class Categorizer {
 					ConceptFeatures features = new ConceptFeatures();
 					features.setName(concept.Name());
 					features.setFrequency(1.0f / m_Datasets.DatasetCount());
-					features.setAvgCohScore(concept.Scores().CoherenceScore());
-					features.setAvgRelScore(concept.Scores().RelevanceScore());
+					//Only count and compute average score for the concepts that were not found by the MCS heuristic
+					if(concept.Scores().CoherenceScore() != 0 || concept.Scores().RelevanceScore() != 0){
+						features.setAvgCohScore(concept.Scores().CoherenceScore());
+						features.setAvgRelScore(concept.Scores().RelevanceScore());
+						features.setNonMCSCount(1);
+					}
 					features.setCategory(concept.Category());
 					features.setCatConf(concept.CatConfidence());
-					features.setCount(1);
 					//All concepts are initially weighted evenly
 					features.setWeight(1);
 					//add it to the map
@@ -203,15 +206,18 @@ public class Categorizer {
 						features.setFrequency(features.Frequency() + 1.0f / m_Datasets.DatasetCount());
 						occurredConcepts.add(concept.ID());
 					}
-					features.setCount(features.Count() + 1);
-					features.setAvgCohScore(
-							(features.AvgCohScore() * (features.Count()-1)  + concept.Scores().CoherenceScore()) 
-							/ (float) features.Count()
+					//Do not take concepts into the score average if they were found by the MCS heuristic (indicated by a score of 0)
+					if(concept.Scores().CoherenceScore() != 0 || concept.Scores().RelevanceScore() != 0){
+						features.setNonMCSCount(features.NonMCSCount() + 1);
+						features.setAvgCohScore(
+							(features.AvgCohScore() * (features.NonMCSCount()-1)  + concept.Scores().CoherenceScore()) 
+							/ (float) features.NonMCSCount()
 							);
-					features.setAvgRelScore(
-							(features.AvgRelScore() * (features.Count()-1)  + concept.Scores().RelevanceScore()) 
-							/ (float) features.Count()
+						features.setAvgRelScore(
+							(features.AvgRelScore() * (features.NonMCSCount()-1)  + concept.Scores().RelevanceScore()) 
+							/ (float) features.NonMCSCount()
 							);
+					}
 				}
 			}
 		}
@@ -230,56 +236,60 @@ public class Categorizer {
 		EnumMap<BabelDomain, Float> potentialTopCategories = new EnumMap<BabelDomain, Float>(BabelDomain.class);
 		//First go through keyword concepts
 		for(Concept concept : dataset.Concepts()){
+			//Work with the concept categories stored in the ConceptFeatures object, meaning they can be altered by the user
+			BabelDomain conceptCategory = m_ConceptIDsToFeatures.get(concept.ID()).Category();
 			//Concepts marked with a 1 are keyword concepts
 			if(!concept.Mark().startsWith("1")) continue;
 			//Ignore concepts with no category
-			if(concept.Category() == null) continue;
+			if(conceptCategory == null) continue;
 			//If all scores are 0 the concept was found by the most common sense heuristic
 			boolean MCS = (concept.Scores().DisambiguationScore() == 0 &&
 						concept.Scores().RelevanceScore() == 0 &&
 						concept.Scores().CoherenceScore() == 0) ? true : false;
 			//If the category does exist in the map of potential top categories
-			if(potentialTopCategories.containsKey(concept.Category())){
+			if(potentialTopCategories.containsKey(conceptCategory)){
 				//Calculate the base score of the category
 				float score = calcCatScore(concept, MCS, true);
 				//Increase the current score of this category by the weighted calculated base score 
-				score = potentialTopCategories.get(concept.Category()) + score * m_Configuration.getRepeatedConceptWeight();
+				score = potentialTopCategories.get(conceptCategory) + score * m_Configuration.getRepeatedConceptWeight();
 				//Replace the old score with the new score 
-				potentialTopCategories.put(concept.Category(), score);
+				potentialTopCategories.put(conceptCategory, score);
 			}
 			//If the category does not exist in the map of potential top categories
 			else{
 				//Calculate the score of the category
 				float score = calcCatScore(concept, MCS, true);
 				//Add the category to map of potential top categories
-				potentialTopCategories.put(concept.Category(), score);
+				potentialTopCategories.put(conceptCategory, score);
 			}
 		}
 		//Now go through non-keyword concepts
 		for(Concept concept : dataset.Concepts()){
+			//Work with the concept categories stored in the ConceptFeatures object, meaning they can be altered by the user
+			BabelDomain conceptCategory = m_ConceptIDsToFeatures.get(concept.ID()).Category();
 			//Concepts marked with a 1 are keyword concepts
 			if(concept.Mark().startsWith("1")) continue;
 			//Ignore concepts with no category
-			if(concept.Category() == null) continue;
+			if(conceptCategory == null) continue;
 			//If all scores are 0 the concept was found by the most common sense heuristic
 			boolean MCS = (concept.Scores().DisambiguationScore() == 0 &&
 						concept.Scores().RelevanceScore() == 0 &&
 						concept.Scores().CoherenceScore() == 0) ? true : false;
 			//If the category does exist in the map of potential top categories
-			if(potentialTopCategories.containsKey(concept.Category())){
+			if(potentialTopCategories.containsKey(conceptCategory)){
 				//Calculate the base score of the category
 				float score = calcCatScore(concept, MCS, false);
 				//Increase the current score of this category by the weighted calculated base score 
-				score = potentialTopCategories.get(concept.Category()) + score * m_Configuration.getRepeatedConceptWeight();
+				score = potentialTopCategories.get(conceptCategory) + score * m_Configuration.getRepeatedConceptWeight();
 				//Replace the old score with the new score 
-				potentialTopCategories.put(concept.Category(), score);
+				potentialTopCategories.put(conceptCategory, score);
 			}
 			//If the category does not exist in the map of potential top categories
 			else{
 				//Calculate the score of the category
 				float score = calcCatScore(concept, MCS, false);
 				//Add the category to map of potential top categories
-				potentialTopCategories.put(concept.Category(), score);
+				potentialTopCategories.put(conceptCategory, score);
 			}
 		}
 		//If no categories were found return the empty set
@@ -324,7 +334,7 @@ public class Categorizer {
 			score *= m_Configuration.getKeywordsWeight();
 		//The score gets weighted by the confidence of the concept belonging to the category
 		//also this weight is defined in the parameters
-		score = score * ( 1 + m_Configuration.getCategoryConfidenceWeight() * concept.CatConfidence());
+		score = score * ( 1 + m_Configuration.getCategoryConfidenceWeight() * m_ConceptIDsToFeatures.get(concept.ID()).CatConf());
 		//Finally, the score gets weighted by the weight of this concept type, which is determined by the concept id.
 		score *= m_ConceptIDsToFeatures.get(concept.ID()).Weight();
 		//Return the score

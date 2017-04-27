@@ -183,7 +183,9 @@ public class Database {
 			insert.setString(1, dataset.ID().value());
 			insert.setString(2, dataset.Description().length() < 16383 ? dataset.Description() : dataset.Description().substring(0, 16382));
 			insert.setString(3, dataset.Title().length() < 4095 ? dataset.Title() : dataset.Title().substring(0, 4094));
-			insert.setString(4, concatArray(dataset.Keywords().toArray(new String[dataset.Keywords().size()])));
+			String keywords = concatArray(dataset.Keywords().toArray(new String[dataset.Keywords().size()]));
+			if(keywords.length() > 4095) keywords = keywords.substring(0, 4095);
+			insert.setString(4, keywords);
 			insert.setString(5, String.format(dataset.Language().name()));
 			insert.setTimestamp(6, (dataset.Issued() == null) ? null : new Timestamp(dataset.Issued().getTime()));
 			insert.setTimestamp(7, (dataset.Modified() == null) ? null : new Timestamp(dataset.Modified().getTime()));
