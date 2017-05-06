@@ -11,6 +11,7 @@ import ac.at.wu.conceptfinder.dataset.Categorizer;
 import ac.at.wu.conceptfinder.dataset.Configuration;
 import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.dataset.Categorizer.ConceptFeatures;
+import ac.at.wu.conceptfinder.stringanalysis.Concept;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 import javafx.beans.property.SimpleStringProperty;
@@ -31,7 +32,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -215,6 +219,21 @@ public class StatisticsWindow implements Initializable {
 					   weight = Float.toString(features.Weight());
 			       return new SimpleStringProperty(weight);
 			   }
+		});
+		//Ctrl + C in Concepts table copies url to babelnet synset to clipboard
+		m_ConceptsTable.setOnKeyPressed(new EventHandler<KeyEvent>() {
+		    @Override
+		    public void handle(KeyEvent t) {
+			   	if(t.isControlDown() && t.getCode() == KeyCode.C){
+			    	ConceptID selectedID = m_ConceptsTable.getSelectionModel().getSelectedItem();
+			    	if(selectedID == null) return;
+
+			    	final Clipboard clipboard = Clipboard.getSystemClipboard();
+			        final ClipboardContent content = new ClipboardContent();
+		            content.putString("http://babelnet.org/synset?word=" + selectedID.value());
+			        clipboard.setContent(content);
+			    }
+		    }
 		});
 		//The apply weights button triggers a categorizationvin the main window
 		m_ApplyButton.setOnAction(new EventHandler<ActionEvent>() {

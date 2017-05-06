@@ -6,14 +6,14 @@
 <?import javafx.scene.layout.*?>
 
 
-<VBox alignment="CENTER" prefHeight="220.0" prefWidth="250.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.PortalSelectionWindow">
+<VBox alignment="CENTER" prefHeight="400.0" prefWidth="280.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.PortalSelectionWindow">
    <children>
       <Label alignment="CENTER" contentDisplay="CENTER" text="Select Portals to load">
          <VBox.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </VBox.margin>
       </Label>
-      <ListView fx:id="m_Portals" prefHeight="195.0" prefWidth="213.0" />
+      <ListView fx:id="m_Portals" prefHeight="255.0" prefWidth="213.0" />
       <Button fx:id="m_LoadBtn" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Load">
          <VBox.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

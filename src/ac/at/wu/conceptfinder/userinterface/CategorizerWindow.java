@@ -247,6 +247,21 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 			    }
 		    }
 		});
+		//Ctrl + C in Concepts table copies url to babelnet synset to clipboard
+		m_ConceptTable.setOnKeyPressed(new EventHandler<KeyEvent>() {
+		    @Override
+		    public void handle(KeyEvent t) {
+		    	if(t.isControlDown() && t.getCode() == KeyCode.C){
+			    	Concept selectedConcept = m_ConceptTable.getSelectionModel().getSelectedItem();
+			    	if(selectedConcept == null) return;
+
+			        final Clipboard clipboard = Clipboard.getSystemClipboard();
+			        final ClipboardContent content = new ClipboardContent();
+		            content.putString("http://babelnet.org/synset?word=" + selectedConcept.ID().value());
+			        clipboard.setContent(content);
+			    }
+		    }
+		});
 		
 		m_DatasetTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Dataset>() {
 		    @Override
