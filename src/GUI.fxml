@@ -128,17 +128,37 @@
                   <HBox alignment="CENTER_LEFT">
                      <children>
                         <Label text="Repeated concepts are weighted by" />
-                        <TextField fx:id="m_RepeatTf" prefHeight="25.0" prefWidth="52.0" text="0.4">
+                        <TextField fx:id="m_RepeatTf" prefHeight="25.0" prefWidth="31.0" text="0.4">
                            <HBox.margin>
                               <Insets left="5.0" />
                            </HBox.margin>
                         </TextField>
-                        <Label text="Number of ouput categories:">
+                        <Label text="Minimum number of categories:">
                            <HBox.margin>
-                              <Insets left="20.0" />
+                              <Insets left="10.0" />
                            </HBox.margin>
                         </Label>
-                        <TextField fx:id="m_numCatsTf" prefHeight="25.0" prefWidth="58.0" text="3">
+                        <TextField fx:id="m_MinCatsTf" prefHeight="25.0" prefWidth="28.0" text="1">
+                           <HBox.margin>
+                              <Insets left="5.0" />
+                           </HBox.margin>
+                        </TextField>
+                        <Label text="Maximum number of categories:">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Label>
+                        <TextField fx:id="m_MaxCatsTf" prefHeight="25.0" prefWidth="30.0" text="3">
+                           <HBox.margin>
+                              <Insets left="5.0" />
+                           </HBox.margin>
+                        </TextField>
+                        <Label text="Minimum category score">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Label>
+                        <TextField fx:id="m_MinCatScoreTf" prefHeight="25.0" prefWidth="43.0" text="0.02">
                            <HBox.margin>
                               <Insets left="5.0" />
                            </HBox.margin>
@@ -148,12 +168,12 @@
                               <Font name="System Bold" size="14.0" />
                            </font>
                            <HBox.margin>
-                              <Insets left="50.0" />
+                              <Insets left="30.0" />
                            </HBox.margin>
                         </Button>
                         <Button fx:id="m_StatsButton" mnemonicParsing="false" text="Statistics">
                            <HBox.margin>
-                              <Insets left="100.0" />
+                              <Insets left="20.0" />
                            </HBox.margin>
                         </Button>
                      </children>
