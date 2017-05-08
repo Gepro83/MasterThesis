@@ -156,6 +156,45 @@ public class Babelfyer implements ConceptDetector {
 			case IT:
 				return it.uniroma1.lcl.jlt.util.Language.IT;
 				
+			case RO:
+				return it.uniroma1.lcl.jlt.util.Language.RO;
+				
+			case SV:
+				return it.uniroma1.lcl.jlt.util.Language.SV;
+				
+			case NL:
+				return it.uniroma1.lcl.jlt.util.Language.NL;
+				
+			case FI:
+				return it.uniroma1.lcl.jlt.util.Language.FI;
+				
+			case CA:
+				return it.uniroma1.lcl.jlt.util.Language.CA;
+				
+			case AF:
+				return it.uniroma1.lcl.jlt.util.Language.AF;
+			
+			case TL:
+				return it.uniroma1.lcl.jlt.util.Language.TL;
+			
+			case DA:
+				return it.uniroma1.lcl.jlt.util.Language.DA;
+				
+			case JA:
+				return it.uniroma1.lcl.jlt.util.Language.JA;
+			
+			case EL:
+				return it.uniroma1.lcl.jlt.util.Language.EL;
+				
+			case PT:
+				return it.uniroma1.lcl.jlt.util.Language.PT;
+				
+			case PL:
+				return it.uniroma1.lcl.jlt.util.Language.PL;
+			
+			case HR:
+				return it.uniroma1.lcl.jlt.util.Language.HR;
+				
 			case NULL:
 				return null;
 		

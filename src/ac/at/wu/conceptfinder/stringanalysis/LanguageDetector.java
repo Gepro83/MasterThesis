@@ -17,7 +17,6 @@ public class LanguageDetector {
 		m_detector = DetectorFactory.create();
 		m_detector.append(text);
 		String resultLanguage = m_detector.detect();
-		
 		ac.at.wu.conceptfinder.stringanalysis.Language result = convertToEnum(resultLanguage);
 		if(result == Language.NULL) 
 			throw new LangDetectException(null, "Cannot find Language for String: " + text);
@@ -46,6 +45,42 @@ public class LanguageDetector {
 				
 			case "fr":
 				return ac.at.wu.conceptfinder.stringanalysis.Language.FR;
+			
+			case "ro":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.RO;
+			
+			case "nl":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.NL;
+				
+			case "fi":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.FI;
+				
+			case "ca":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.CA;
+				
+			case "af":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.AF;
+			
+			case "tl":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.TL;
+				
+			case "da":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.DA;
+				
+			case "ja":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.JA;
+			
+			case "el":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.EL;
+				
+			case "pt":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.PT;
+				
+			case "pl":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.PL;
+				
+			case "hr":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.HR;
 		}
 		
 		return ac.at.wu.conceptfinder.stringanalysis.Language.NULL;
