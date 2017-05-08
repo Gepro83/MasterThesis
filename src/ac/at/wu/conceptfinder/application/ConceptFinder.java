@@ -85,7 +85,8 @@ public class ConceptFinder {
 			String langText = currentConceptText.Text();
 			langText = langText.substring(langText.indexOf(Globals.KEYWORDS_MARKER) + Globals.KEYWORDS_MARKER.length());
 			try{
-				Language detectedLanguage = langDetector.identifyLanguage(langText); 
+				Language detectedLanguage = langDetector.identifyLanguage(langText);
+				System.out.println("Language found for dataset: " + dataset.ID().value() + " : " + detectedLanguage);
 				dataset.setLanguage(detectedLanguage);
 				currentConceptText.SetLanguage(detectedLanguage);
 			}catch (LangDetectException e){
@@ -110,9 +111,17 @@ public class ConceptFinder {
 			}
 		}
 
-		reader.close();
 	}
 	
+	//Sets the language for all active datasets
+	public void setAllLanguages(Language lang){
+		for(Dataset dataset : m_datasetManager){
+			ConceptText conceptText = m_datasetIdToConceptText.get(dataset.ID());
+			dataset.setLanguage(lang);
+			conceptText.SetLanguage(lang);
+		}
+	}
+		
 	public void discoverConcepts() throws ConceptDetectionException{
 		for(Dataset dataset : m_datasetManager){
 			System.out.println("Discovering concepts for dataset: " + dataset.ID().value() + " lang: " + dataset.Language().toString());

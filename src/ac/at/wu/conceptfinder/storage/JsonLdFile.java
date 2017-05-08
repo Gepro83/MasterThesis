@@ -8,11 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 import com.github.jsonldjava.core.JsonLdApi;
 import com.github.jsonldjava.core.JsonLdError;
@@ -38,10 +42,65 @@ public class JsonLdFile {
 	
 	/*
 	 * loads all dcat datasets that are found in the jsonld file
-	 * expect the jsonld in expanded form
 	 */
-	public List<Dataset> loadDatasets() throws StorageException{
+	public List<Dataset> loadDatasets(){
 		
+		//Start a list of datasets
+		ArrayList<Dataset> datasets = new ArrayList<Dataset>();
+		//Read the file, it must consist of a json array holding all datasets
+		JsonReader reader = Json.createReader(m_inputStream);
+		JsonArray allDatasets = reader.readArray();
+		
+		//Go through the array and create a dataset for each entry
+		for(int i = 0; i < allDatasets.size(); i++){
+			//Each datasets is contained in another array, otherwise it is an error json object
+			if(allDatasets.get(i).getValueType() == JsonValue.ValueType.ARRAY){
+				//Go through the array to find the actual dataset object
+				JsonArray datasetArray = allDatasets.getJsonArray(i);
+				for(int j = 0; j < datasetArray.size(); j++){
+					//Check if this entry is a dataset
+					JsonObject datasetObject = datasetArray.getJsonObject(j);
+					JsonArray objectType = datasetObject.getJsonArray("@type");
+					boolean isDataset = false;
+										for(int k = 0; k < objectType.size(); k++)
+						if(objectType.getString(k).toLowerCase().equals("http://www.w3.org/ns/dcat#dataset"))
+							isDataset = true;
+					if(!isDataset) continue;
+					
+					//Create a new dataset from the respective fields
+					String ID = datasetObject.getString("@id");
+					//If there is no ID then skip this entry
+					if(ID == null) continue;
+					Dataset dataset = new Dataset(new RdfId(ID));
+					
+					//Set title, description and keywords, check if they exist first
+					JsonArray title = datasetObject.getJsonArray("http://purl.org/dc/terms/title");
+					if(title != null){
+						dataset.setTitle(title.getJsonObject(0).getString("@value"));
+					}else{
+						dataset.setTitle("");
+					}
+					
+					JsonArray description = datasetObject.getJsonArray("http://purl.org/dc/terms/description");
+					if(description != null){
+						dataset.setDescription(description.getJsonObject(0).getString("@value"));
+					}else{
+						dataset.setDescription("");
+					}
+					
+					JsonArray keywords = datasetObject.getJsonArray("http://www.w3.org/ns/dcat#keyword");
+					if(keywords != null)
+						for(JsonObject keywordObject : keywords.getValuesAs(JsonObject.class))
+							dataset.addKeyword(keywordObject.getString("@value"));
+					
+					//Add the datasets to the resultlist
+					datasets.add(dataset);
+				}
+			}
+		}
+		
+		return datasets;
+		/*
 		ArrayList<Dataset> datasets = new ArrayList<Dataset>();
 		ArrayList<Distribution> distributions = new ArrayList<Distribution>();
 		
@@ -56,9 +115,12 @@ public class JsonLdFile {
 		int distIndexCounter = 0;
 			
 		try {
-			Object jsonObject = JsonUtils.fromInputStream(m_inputStream);
-			JsonLdApi api = new JsonLdApi(jsonObject, new JsonLdOptions());
+			
+			
+			
+			JsonLdApi api = new JsonLdApi(allDatasetsBuilder.build(), new JsonLdOptions());
 		
+			
 			RDFDataset rdf = api.toRDF();
 			List<RDFDataset.Quad> quads = rdf.getQuads("@default");
 			
@@ -163,11 +225,10 @@ public class JsonLdFile {
 		} catch (JsonLdError e) {
 			throw new StorageException("Somethin wrong with the Json: " + e.getMessage(), 
 					StorageError.jsonError);
-		} catch (IOException e) {
-			throw new StorageException("Cannot access file: " + m_filename, StorageError.cannotConnect);
 		}
 
-		return datasets;
+		return datasets;*/
+		
 	}
 	
 	String m_filename;

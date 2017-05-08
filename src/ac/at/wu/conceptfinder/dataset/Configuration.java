@@ -13,7 +13,9 @@ public class Configuration{
 		m_w_repeatconcept = 0.5f;
 		m_w_catconf = 0.5f;
 		m_MCSscore = 0.5f;
-		m_numOutputCats = 3;
+		m_MaxOutputCats = 3;
+		m_MinOutputCats = 1;
+		m_MinScore = 0.02f;
 	}
 	
 	public float getKeywordsWeight(){ return m_w_keywords; }
@@ -22,13 +24,17 @@ public class Configuration{
 	public float getRepeatedConceptWeight(){ return m_w_repeatconcept; }
 	public float getCategoryConfidenceWeight(){ return m_w_catconf; }
 	public float getMCSScore(){ return m_MCSscore; }
-	public int getNumOutputCategories(){ return m_numOutputCats; }
+	public int getMaxOutputCategories(){ return m_MaxOutputCats; }
+	public int getMinOutputCategories(){ return m_MinOutputCats; }
+	public float getMinScore() { return m_MinScore; }
 	
 	public void setKeywordsWeight(float weight){ if(weight >= 0) m_w_keywords = weight; }
 	public void setRepeatedConceptWeight(float weight){ if(weight >= 0) m_w_repeatconcept = weight; }
 	public void setCategoryConfidenceWeight(float weight){ if(weight >= 0) m_w_catconf = weight; }
 	public void setMCSScore(float score){ if(score >= 0 && score <= 1) m_MCSscore = score; }
-	public void setNumOutputCategories(int number) { if(number > 0) m_numOutputCats = number; }
+	public void setMaxOutputCategories(int number) { if(number > 0 && number >= m_MinOutputCats) m_MaxOutputCats = number; }
+	public void setMinOutputCategories(int number) { if(number >= 0 && number <= m_MaxOutputCats) m_MinOutputCats = number; }
+	public void setMinScore(float score){ if(score >= 0 && score <= 1) m_MinScore = score; }
 	
 	/*
 	 * Sets the weight of the relevance score for this categorizer
@@ -66,7 +72,11 @@ public class Configuration{
 	//score of the MCS heuristic
 	private float m_MCSscore;
 	
-	//number of maximum categories per dataset 
-	private int m_numOutputCats;
+	//number of maximum/minimum categories per dataset 
+	private int m_MaxOutputCats;
+	private int m_MinOutputCats;
+	
+	//minimum score for category (m_MinOutputCats supersedes this)
+	private float m_MinScore;
 
 }
