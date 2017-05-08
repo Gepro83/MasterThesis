@@ -62,13 +62,23 @@ public class Categorizer {
 		public float Weight() { return m_Weight; }
 		
 		public void setName(String n) { m_Name = n; }
-		public void setFrequency(float f){ m_Frequency = f; }
+		public void setFrequency(float f){ 
+			if(f >= 0.0f && f <= 1.0f){
+				m_Frequency = f; 
+			}
+			else if (f > 1.0f){
+				m_Frequency = 1.0f;
+			}
+			else if (f < 0.0f){
+				m_Frequency = 0.0f;
+			}
+		}
 		public void setCategory(BabelDomain c){ m_Category = c; }
-		public void setCatConf(float c){ m_CatConf = c; }
+		public void setCatConf(float c){ if(c >= 0.0f && c <= 1.0f) m_CatConf = c; }
 		public void setAvgRelScore(float s){ m_AvgRelScore = s; }
 		public void setAvgCohScore(float s){ m_AvgCohScore = s; }
 		public void setNonMCSCount(int c) { m_NonMCSCount = c; }
-		public void setWeight(float w){ m_Weight = w; }
+		public void setWeight(float w){ if(w >= 0.0f && w <= 1.0f) m_Weight = w; }
 	}
 
 	public Categorizer(Database database){
@@ -234,7 +244,11 @@ public class Categorizer {
   	private EnumMap<BabelDomain, Float> selectCategories(Dataset dataset){
 		//Keep a map of potential top categories and their scores
 		EnumMap<BabelDomain, Float> potentialTopCategories = new EnumMap<BabelDomain, Float>(BabelDomain.class);
+		//Keep track of how many concepts contributed to the score of each category
+		EnumMap<BabelDomain, Integer> numContributeConcepts = new EnumMap<BabelDomain, Integer>(BabelDomain.class);
 		//First go through keyword concepts
+		//Keep a list of conceptIDs that appeared in the dataset
+		HashSet<ConceptID> appearedConcepts = new HashSet<ConceptID>();
 		for(Concept concept : dataset.Concepts()){
 			//Work with the concept categories stored in the ConceptFeatures object, meaning they can be altered by the user
 			BabelDomain conceptCategory = m_ConceptIDsToFeatures.get(concept.ID()).Category();
@@ -250,10 +264,16 @@ public class Categorizer {
 			if(potentialTopCategories.containsKey(conceptCategory)){
 				//Calculate the base score of the category
 				float score = calcCatScore(concept, MCS, true);
-				//Increase the current score of this category by the weighted calculated base score 
-				score = potentialTopCategories.get(conceptCategory) + score * m_Configuration.getRepeatedConceptWeight();
+				//If this concept has appeared in this dataset already weight it with the respective parameter
+				if(appearedConcepts.contains(concept.ID()))
+					score *= m_Configuration.getRepeatedConceptWeight();
+				//Increase the current score of this category by the calculated base score 
+				score += potentialTopCategories.get(conceptCategory); 
 				//Replace the old score with the new score 
 				potentialTopCategories.put(conceptCategory, score);
+				//Increase the counter for contributing concepts to the category
+				int i = numContributeConcepts.get(conceptCategory);
+				numContributeConcepts.put(conceptCategory, ++i);
 			}
 			//If the category does not exist in the map of potential top categories
 			else{
@@ -261,7 +281,11 @@ public class Categorizer {
 				float score = calcCatScore(concept, MCS, true);
 				//Add the category to map of potential top categories
 				potentialTopCategories.put(conceptCategory, score);
+				//Start counting the contributing concepts for the category
+				numContributeConcepts.put(conceptCategory, 1);
 			}
+			//Add the conceptID to the list of IDs that appeared in this dataset
+			appearedConcepts.add(concept.ID());
 		}
 		//Now go through non-keyword concepts
 		for(Concept concept : dataset.Concepts()){
@@ -278,22 +302,39 @@ public class Categorizer {
 			//If the category does exist in the map of potential top categories
 			if(potentialTopCategories.containsKey(conceptCategory)){
 				//Calculate the base score of the category
-				float score = calcCatScore(concept, MCS, false);
-				//Increase the current score of this category by the weighted calculated base score 
-				score = potentialTopCategories.get(conceptCategory) + score * m_Configuration.getRepeatedConceptWeight();
+				float score = calcCatScore(concept, MCS, true);
+				//If this concept has appeared in this dataset already weight it with the respective parameter
+				if(appearedConcepts.contains(concept.ID()))
+					score *= m_Configuration.getRepeatedConceptWeight();
+				
+				//Increase the current score of this category by the calculated base score 
+				score += potentialTopCategories.get(conceptCategory); 
 				//Replace the old score with the new score 
 				potentialTopCategories.put(conceptCategory, score);
+				//Increase the counter for contributing concepts to the category
+				int i = numContributeConcepts.get(conceptCategory);
+				numContributeConcepts.put(conceptCategory, ++i);
 			}
 			//If the category does not exist in the map of potential top categories
 			else{
 				//Calculate the score of the category
-				float score = calcCatScore(concept, MCS, false);
+				float score = calcCatScore(concept, MCS, true);
 				//Add the category to map of potential top categories
 				potentialTopCategories.put(conceptCategory, score);
+				//Start counting the contributing concepts for the category
+				numContributeConcepts.put(conceptCategory, 1);
 			}
+			//Add the conceptID to the list of IDs that appeared in this dataset
+			appearedConcepts.add(concept.ID());
 		}
 		//If no categories were found return the empty set
 		if(potentialTopCategories.isEmpty()) return potentialTopCategories;
+		//Normalize the scores of the categories
+		for(Map.Entry<BabelDomain, Float> catWithScore : potentialTopCategories.entrySet()){
+			float score = catWithScore.getValue();
+			score /= numContributeConcepts.get(catWithScore.getKey());
+			catWithScore.setValue(score);
+		}
 		//Create a list of all the potential top categories 
 		List<BabelDomain> potentialTopCatsList = new ArrayList<BabelDomain>(potentialTopCategories.keySet());
 		//Sort the list by their scores in the map of potential top categories
@@ -309,10 +350,19 @@ public class Categorizer {
 		int counter = 0;
 		for(BabelDomain category : potentialTopCatsList){
 			counter++;
-			if(counter > m_Configuration.getNumOutputCategories())
+			if(counter > m_Configuration.getMaxOutputCategories())
 				potentialTopCategories.remove(category);
 		}
-		
+		//Discard categories with a score below the threshold unless the minimum number of categories is reached
+		counter = 0;
+		for(BabelDomain category : potentialTopCatsList){
+			if(!potentialTopCategories.containsKey(category)) continue;
+			counter++;
+			float score = potentialTopCategories.get(category);
+			if(score < m_Configuration.getMinScore())
+				if(counter > m_Configuration.getMinOutputCategories()) 
+					potentialTopCategories.remove(category);
+		}
 		//Return the resulting map
 		return potentialTopCategories;
 	}
@@ -335,7 +385,9 @@ public class Categorizer {
 		//The score gets weighted by the confidence of the concept belonging to the category
 		//also this weight is defined in the parameters
 		score = score * ( 1 + m_Configuration.getCategoryConfidenceWeight() * m_ConceptIDsToFeatures.get(concept.ID()).CatConf());
-		//Finally, the score gets weighted by the weight of this concept type, which is determined by the concept id.
+		//Normalize the score
+		score /= m_Configuration.getKeywordsWeight() * (1 + m_Configuration.getCategoryConfidenceWeight());
+		//Finally, the score gets weighted by the weight of this concept type, which is determined by the concept id. It must be between 0 and 1
 		score *= m_ConceptIDsToFeatures.get(concept.ID()).Weight();
 		//Return the score
 		return score;

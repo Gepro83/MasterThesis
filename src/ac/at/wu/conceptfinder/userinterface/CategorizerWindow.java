@@ -376,7 +376,9 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 				conf.setKeywordsWeight(Float.parseFloat(m_KeyTf.getText()));
 				conf.setCategoryConfidenceWeight(Float.parseFloat(m_CatConfTf.getText()));
 				conf.setRepeatedConceptWeight(Float.parseFloat(m_RepeatTf.getText()));
-				conf.setNumOutputCategories(Integer.parseInt(m_numCatsTf.getText()));
+				conf.setMaxOutputCategories(Integer.parseInt(m_MaxCatsTf.getText()));
+				conf.setMinOutputCategories(Integer.parseInt(m_MinCatsTf.getText()));
+				conf.setMinScore(Float.parseFloat(m_MinCatScoreTf.getText()));
 				//Clear the concept tableview
 				m_Conceptsdata.clear();
 				//Run the categorization algorithm
@@ -515,11 +517,25 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		}
 		//Check input for number of output categories
 		try{
-			Integer testValue = Integer.parseInt(m_numCatsTf.getText());
+			Integer testValue = Integer.parseInt(m_MaxCatsTf.getText());
 			if(testValue < 1)
 				throw new NumberFormatException();
 		}catch (NumberFormatException e){
-			allertMsg += "Please enter a positive number for the number of output categories" + System.getProperty("line.separator");
+			allertMsg += "Please enter a positive number for the maximum number of output categories." + System.getProperty("line.separator");
+		}
+		try{
+			Integer testValue = Integer.parseInt(m_MinCatsTf.getText());
+			if(testValue < 1)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a positive number for the minimum number of output categories." + System.getProperty("line.separator");
+		}
+		try{
+			Float testValue = Float.parseFloat(m_MinCatScoreTf.getText());
+			if(testValue < 0.0f || testValue > 1.0f)
+				throw new NumberFormatException();
+		}catch (NumberFormatException e){
+			allertMsg += "Please enter a positive number between 0 and 1 as minimum category score." + System.getProperty("line.separator");
 		}
 		if(allertMsg.length() > 18){
 			Alert alert = new Alert(AlertType.ERROR);
@@ -590,8 +606,11 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	@FXML
 	private TextField m_RepeatTf;
 	@FXML
-	private TextField m_numCatsTf;
-	
+	private TextField m_MinCatsTf;
+	@FXML
+	private TextField m_MaxCatsTf;
+	@FXML
+	private TextField m_MinCatScoreTf;
 	@FXML
 	private Button m_CategorizeBtn;
 	@FXML

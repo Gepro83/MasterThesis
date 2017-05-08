@@ -196,9 +196,11 @@ public class StatisticsWindow implements Initializable {
 	                	float newWeight;
 	                	try{
 	                		newWeight = Float.parseFloat(t.getNewValue());
+	                		if(newWeight < 0 || newWeight > 1)
+	                			throw new NumberFormatException();
 	                	}catch (NumberFormatException e){
 	                		Alert alert = new Alert(AlertType.ERROR);
-	                		alert.setContentText("Please enter a number!");
+	                		alert.setContentText("Please enter a number between 0 and 1!");
 	                		alert.showAndWait();
 	                		m_ConceptsTable.refresh();
 	                		return;
