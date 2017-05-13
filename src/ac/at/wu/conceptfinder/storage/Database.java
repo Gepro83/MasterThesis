@@ -14,8 +14,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -322,7 +322,6 @@ public class Database {
 		for(Dataset dataset : datasets){
 		
 			try{
-				//System.out.println("Updating dataset: " + dataset.ID().value());
 				PreparedStatement update = connection.prepareStatement("UPDATE dataset SET "
 						+ "description = ?, "
 						+ "title = ?,"
@@ -344,7 +343,6 @@ public class Database {
 				
 				update.executeUpdate();
 				update.close();
-				//System.out.println("Done!");
 				
 				if(!updateConcepts) continue;
 				
@@ -631,7 +629,7 @@ public class Database {
 	
 		try {
 			//Get the list of portals from the database
-			ResultSet result = select.executeQuery("SELECT DISTINCT portal FROM dataset");
+			ResultSet result = select.executeQuery("SELECT DISTINCT portal FROM dataset ORDER BY portal");
 			//return the list 
 			ArrayList<String> portals = new ArrayList<String>();
 			while(result.next()){
@@ -643,6 +641,26 @@ public class Database {
 			e.printStackTrace();
 			throw new StorageException("some SQL error occured with host: " + m_host, StorageError.SQLError);
 		} 		
+	}
+	
+	/*
+	 * Gets the default category and confidence of a specific concept (out of the babeldomains table)
+	 * returns null if there is no default category
+	 */
+	public Map<BabelDomain, Float> getDefaultCategoryWithConf(ConceptID conceptID) throws StorageException{
+		Connection connection = getConnection();
+		Statement insert = getStatement(connection);
+	
+		try{
+			ResultSet result = insert.executeQuery("SELECT domain, confidence FROM babeldomains WHERE synsetid='" + conceptID.value() + "'");
+			if(result.next())
+				return Collections.singletonMap(BabelDomain.valueOf(result.getString("domain")), result.getFloat("confidence"));
+			return null;
+		
+		}catch (SQLException e) {
+			e.printStackTrace();
+			throw new StorageException("some SQL error occured with host: " + m_host, StorageError.SQLError);
+		}
 	}
 	
 	/*

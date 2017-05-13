@@ -156,8 +156,8 @@ public class Babelfyer implements ConceptDetector {
 			case IT:
 				return it.uniroma1.lcl.jlt.util.Language.IT;
 				
-			case RO:
-				return it.uniroma1.lcl.jlt.util.Language.RO;
+			//case RO:
+			//	return it.uniroma1.lcl.jlt.util.Language.RO;
 				
 			case SV:
 				return it.uniroma1.lcl.jlt.util.Language.SV;
@@ -168,8 +168,8 @@ public class Babelfyer implements ConceptDetector {
 			case FI:
 				return it.uniroma1.lcl.jlt.util.Language.FI;
 				
-			case CA:
-				return it.uniroma1.lcl.jlt.util.Language.CA;
+			//case CA:
+			//	return it.uniroma1.lcl.jlt.util.Language.CA;
 				
 			case AF:
 				return it.uniroma1.lcl.jlt.util.Language.AF;
@@ -194,6 +194,21 @@ public class Babelfyer implements ConceptDetector {
 			
 			case HR:
 				return it.uniroma1.lcl.jlt.util.Language.HR;
+				
+			case RU:
+				return it.uniroma1.lcl.jlt.util.Language.RU;
+			
+			case HU:
+				return it.uniroma1.lcl.jlt.util.Language.HU;
+			
+			case SK:
+				return it.uniroma1.lcl.jlt.util.Language.SK;
+			
+			case BG:
+				return it.uniroma1.lcl.jlt.util.Language.BG;
+			
+			case SW:
+				return it.uniroma1.lcl.jlt.util.Language.SW;
 				
 			case NULL:
 				return null;

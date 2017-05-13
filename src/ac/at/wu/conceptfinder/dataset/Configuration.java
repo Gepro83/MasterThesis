@@ -1,10 +1,17 @@
 package ac.at.wu.conceptfinder.dataset;
 
+import java.io.Serializable;
+
 /*
  * Holds all configuration parameters for a categorization of datasets  
  */
-public class Configuration{
+public class Configuration implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6452960684529199291L;
+
 	public Configuration(){
 		//set default values for parameters
 		m_w_keywords = 3.0f;

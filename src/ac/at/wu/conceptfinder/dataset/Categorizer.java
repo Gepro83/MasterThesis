@@ -1,16 +1,18 @@
 package ac.at.wu.conceptfinder.dataset;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ac.at.wu.conceptfinder.storage.CategorizerSettings;
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.DatasetSearchMask;
 import ac.at.wu.conceptfinder.storage.StorageException;
@@ -27,59 +29,6 @@ import it.uniroma1.lcl.babelnet.data.BabelDomain;
  * The class also provides some statistics about the managed datasets and categories.
  */
 public class Categorizer {
-	
-	/*
-	 * A class that encapsules the features a (type of) concept can have
-	 */
-	public class ConceptFeatures{
-		private String m_Name;
-		private float m_Frequency;
-		private BabelDomain m_Category;
-		private float m_CatConf;
-		private float m_AvgRelScore;
-		private float m_AvgCohScore;
-		private int m_NonMCSCount;
-		private float m_Weight;
-		
-		ConceptFeatures(){
-			m_Name = "";
-			m_Frequency = 0;
-			m_Category = null;
-			m_CatConf = 0;
-			m_AvgRelScore = 0;
-			m_AvgCohScore = 0;
-			m_NonMCSCount = 0;
-			m_Weight = 0;
-		}
-		
-		public String Name() { return m_Name; }
-		public float Frequency() { return m_Frequency; }
-		public BabelDomain Category() { return m_Category; }
-		public float CatConf() { return m_CatConf; }
-		public float AvgRelScore() { return m_AvgRelScore; }
-		public float AvgCohScore() { return m_AvgCohScore; }
-		public int NonMCSCount() { return m_NonMCSCount; }
-		public float Weight() { return m_Weight; }
-		
-		public void setName(String n) { m_Name = n; }
-		public void setFrequency(float f){ 
-			if(f >= 0.0f && f <= 1.0f){
-				m_Frequency = f; 
-			}
-			else if (f > 1.0f){
-				m_Frequency = 1.0f;
-			}
-			else if (f < 0.0f){
-				m_Frequency = 0.0f;
-			}
-		}
-		public void setCategory(BabelDomain c){ m_Category = c; }
-		public void setCatConf(float c){ if(c >= 0.0f && c <= 1.0f) m_CatConf = c; }
-		public void setAvgRelScore(float s){ m_AvgRelScore = s; }
-		public void setAvgCohScore(float s){ m_AvgCohScore = s; }
-		public void setNonMCSCount(int c) { m_NonMCSCount = c; }
-		public void setWeight(float w){ if(w >= 0.0f && w <= 1.0f) m_Weight = w; }
-	}
 
 	public Categorizer(Database database){
 		m_Database = database;
@@ -109,6 +58,12 @@ public class Categorizer {
 	 * The frequency of a category corresponds to the probability of a single dataset to belong to this category.
 	 */
 	public Map<BabelDomain, Float> CategoriesToFrequency(){ return Collections.unmodifiableMap(m_CategoryToFrequency); }
+	//Adds a specific concept with corresponding features to this categorizer - if it allready exists it will be replaced
+	public void addConceptWithFeatures(ConceptID id, ConceptFeatures features){
+		m_ConceptIDsToFeatures.put(id, features);
+		//recalculate average scores and frequencies
+		calcConceptIDsToFeatures();
+	}
 	
 	/*
 	 * Adds all datasets of the portal to this Categorizer.
@@ -116,6 +71,7 @@ public class Categorizer {
 	 */
 	public void loadPortal(String portal) throws StorageException{
 		m_Datasets.addDatasets(m_Database.getDatasets(new DatasetSearchMask(null, new String[]{portal})));
+		updateCategoryFrequencies();
 		calcConceptIDsToFeatures();
 	}
 	
@@ -174,11 +130,60 @@ public class Categorizer {
 	}
 	
 	/*
+	 * Saves the Configuration and all ConceptFeatures that were edited to a file
+	 */
+	public void saveSettings(File file) throws IOException{
+		CategorizerSettings settings = new CategorizerSettings(m_Configuration);
+		//Only save concept features that have been edited
+		for(Map.Entry<ConceptID, ConceptFeatures> conceptFeature : m_ConceptIDsToFeatures.entrySet()){
+			if(conceptFeature.getValue().getEdited())
+				settings.addConceptFeature(conceptFeature.getKey(), conceptFeature.getValue());
+		}
+		settings.save(file);
+	}
+	
+	/*
+	 * Loads the Configuration and all ConceptFeatures that are stored in a file.
+	 * Replaces the actual configuration and all conceptfeatures that have been edited.
+	 */
+	public void loadSettings(File file) throws IOException {
+		CategorizerSettings settings;
+		try {
+			settings = CategorizerSettings.load(file);
+		} catch (ClassNotFoundException e) {
+			throw new IOException("Fileformat missmatch");
+		}
+		m_Configuration = settings.getConfiguration();
+		
+		m_ConceptIDsToFeatures.putAll(settings.getConceptFeatures());
+		calcConceptIDsToFeatures();
+	}
+	
+	/*
+	 * Returns a map with a single entry for the default category and the corresponding default confidence.
+	 * @return BabelDomain is null if there is no category
+	 */
+	public Map<BabelDomain, Float> getDefaultCategoryWithConf(ConceptID conceptID) throws StorageException{
+		Map<BabelDomain, Float> defaults = m_Database.getDefaultCategoryWithConf(conceptID);
+		if(defaults == null)
+			return Collections.singletonMap(null, 0.0f);
+		else
+			return defaults;
+	}
+	
+	/*
 	 * Calculates the map that contains all distinct concepts (IDs) that occur in the currently active datasets
 	 * together with their features.
-	 * (Re)initializes the weights of all concepts to 1.
+	 * (Re)initializes the weights of all concepts to 1 aswell as all categories and respective confidences.
+	 * Keeps category, category confidence, name and weight of edited features
 	 */
 	private void calcConceptIDsToFeatures(){
+		//Keep a list of edited features
+		HashMap<ConceptID, ConceptFeatures> editedFeatures = new HashMap<ConceptID, ConceptFeatures>();
+		for(Map.Entry<ConceptID, ConceptFeatures> idWithFeature : m_ConceptIDsToFeatures.entrySet())
+			if(idWithFeature.getValue().getEdited())
+				editedFeatures.put(idWithFeature.getKey(), idWithFeature.getValue());
+		//Clear the map
 		m_ConceptIDsToFeatures.clear();
 		//Go through all active datasets
 		for(Dataset dataset : m_Datasets){
@@ -190,7 +195,22 @@ public class Categorizer {
 				if(!m_ConceptIDsToFeatures.containsKey(concept.ID())){
 					//Set the appropriate concept features 
 					ConceptFeatures features = new ConceptFeatures();
-					features.setName(concept.Name());
+					//Keep category, category confidence, name and weight of edited features
+					if(editedFeatures.containsKey(concept.ID())){
+						ConceptFeatures editedFeature = editedFeatures.get(concept.ID());
+						features.setName(editedFeature.Name());
+						features.setCategory(editedFeature.Category());
+						features.setCatConf(editedFeature.CatConf());
+						features.setWeight(editedFeature.Weight());
+						features.setEdited(true);
+					}
+					else{
+						features.setName(concept.Name());
+						features.setCategory(concept.Category());
+						features.setCatConf(concept.CatConfidence());
+						//All concepts are initially weighted evenly
+						features.setWeight(1);
+					}
 					features.setFrequency(1.0f / m_Datasets.DatasetCount());
 					//Only count and compute average score for the concepts that were not found by the MCS heuristic
 					if(concept.Scores().CoherenceScore() != 0 || concept.Scores().RelevanceScore() != 0){
@@ -198,10 +218,7 @@ public class Categorizer {
 						features.setAvgRelScore(concept.Scores().RelevanceScore());
 						features.setNonMCSCount(1);
 					}
-					features.setCategory(concept.Category());
-					features.setCatConf(concept.CatConfidence());
-					//All concepts are initially weighted evenly
-					features.setWeight(1);
+
 					//add it to the map
 					m_ConceptIDsToFeatures.put(concept.ID(), features);
 					//This concept has now occurred in this dataset
@@ -229,6 +246,16 @@ public class Categorizer {
 							);
 					}
 				}
+			}
+		}
+		//If the edited concept features do not occur in the current dataset add them with 0 frequency and 0 average scores
+		for(Map.Entry<ConceptID, ConceptFeatures> idWithFeature : editedFeatures.entrySet()){
+			if(!m_ConceptIDsToFeatures.containsKey(idWithFeature.getKey())){
+				ConceptFeatures features = idWithFeature.getValue();
+				features.setAvgCohScore(0);
+				features.setAvgRelScore(0);
+				features.setFrequency(0);
+				m_ConceptIDsToFeatures.put(idWithFeature.getKey(), features);
 			}
 		}
 	}

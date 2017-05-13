@@ -8,9 +8,10 @@ import java.util.ResourceBundle;
 
 import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Categorizer;
+import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
 import ac.at.wu.conceptfinder.dataset.Configuration;
 import ac.at.wu.conceptfinder.dataset.Dataset;
-import ac.at.wu.conceptfinder.dataset.Categorizer.ConceptFeatures;
+import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
@@ -26,7 +27,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -36,6 +39,8 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -148,11 +153,12 @@ public class StatisticsWindow implements Initializable {
 	                		m_ConceptsTable.refresh();
 	                		return;
 	                	}
-	                    m_Categorizer.ConceptIDsToFeatures().get(
+	                	ConceptFeatures conceptFeatures = m_Categorizer.ConceptIDsToFeatures().get(
 	                    		((ConceptID) t.getTableView().getItems().get(
 	                        t.getTablePosition().getRow())
-	                        ))
-	                    .setCatConf(newConf);
+	                        ));
+	                    conceptFeatures.setCatConf(newConf);
+	                    conceptFeatures.setEdited(true);
 	                }
 	             }
 	        );   
@@ -205,11 +211,13 @@ public class StatisticsWindow implements Initializable {
 	                		m_ConceptsTable.refresh();
 	                		return;
 	                	}
-	                    m_Categorizer.ConceptIDsToFeatures().get(
+	                	ConceptFeatures conceptFeatures = m_Categorizer.ConceptIDsToFeatures().get(
 	                    		((ConceptID) t.getTableView().getItems().get(
-	                        t.getTablePosition().getRow())
-	                        ))
-	                    .setWeight(newWeight);
+	        	                        t.getTablePosition().getRow())
+	        	                        )); 
+	                    conceptFeatures.setWeight(newWeight);
+	                    conceptFeatures.setEdited(true);
+	                    m_ConceptsTable.refresh();
 	                }
 	             }
 	        );   
@@ -222,6 +230,36 @@ public class StatisticsWindow implements Initializable {
 			       return new SimpleStringProperty(weight);
 			   }
 		});
+		//Create a context menu for reseting category and confidence to default
+		final ContextMenu cm = new ContextMenu();
+		MenuItem cmReset = new MenuItem("Reset to default");
+		cmReset.setOnAction(new EventHandler<ActionEvent>() {
+		    public void handle(ActionEvent e) {
+		    	ConceptID selectedID = m_ConceptsTable.getSelectionModel().getSelectedItem();
+		    	ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get(selectedID);
+		    	try {
+					Map.Entry<BabelDomain, Float> stdValues = m_Categorizer.getDefaultCategoryWithConf(selectedID).entrySet().iterator().next();
+					cellFeatures.setCategory(stdValues.getKey());
+					cellFeatures.setCatConf(stdValues.getValue());
+					cellFeatures.setWeight(1.0f);
+					cellFeatures.setEdited(false);
+					m_ConceptsTable.refresh();
+				} catch (StorageException e1) {
+					Alert alert = new Alert(AlertType.ERROR);
+            		alert.setContentText("Cannot access database!");
+            		alert.showAndWait();
+				}
+		    }
+		});
+		cm.getItems().add(cmReset);
+		//Attach the context menus to the secondary mousebutton of the concepts table
+		m_ConceptsTable.addEventHandler(MouseEvent.MOUSE_CLICKED,
+			    new EventHandler<MouseEvent>() {
+			        @Override public void handle(MouseEvent e) {
+			            if (e.getButton() == MouseButton.SECONDARY)  
+			            	cm.show(m_ConceptsTable, e.getScreenX(), e.getScreenY());
+			        }
+			});
 		//Ctrl + C in Concepts table copies url to babelnet synset to clipboard
 		m_ConceptsTable.setOnKeyPressed(new EventHandler<KeyEvent>() {
 		    @Override
@@ -282,6 +320,9 @@ public class StatisticsWindow implements Initializable {
 		//Add the conceptIDs in the appropriate order
 		for(Map.Entry<ConceptID, Float> conceptIdToFrequency : Globals.entriesSortedByValues(conceptIDsToFrequencies))
 			m_ConceptsData.add(0, conceptIdToFrequency.getKey());
+		//refresh tables
+		m_CategoriesTable.refresh();
+		m_ConceptsTable.refresh();
 	}
 
 	@FXML
@@ -325,7 +366,6 @@ public class StatisticsWindow implements Initializable {
 
 	private final ObservableList<BabelDomain> m_CategoriesData = FXCollections.observableArrayList();
 	private final ObservableList<ConceptID> m_ConceptsData = FXCollections.observableArrayList();
-	private final HashSet<ConceptID> m_MarkedConcepts = new HashSet<ConceptID>();
 
 	private Categorizer m_Categorizer;
 	private CategorizerCallback m_Callback;
@@ -365,7 +405,7 @@ public class StatisticsWindow implements Initializable {
         @Override
         public void updateItem(String item, boolean empty) {
             super.updateItem(item, empty);
- 
+
             if (empty) {
                 setText(null);
                 setGraphic(null);
@@ -414,6 +454,7 @@ public class StatisticsWindow implements Initializable {
   			      	if(newVal == null) return;
   			      	ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get((ConceptID) getTableRow().getItem());
   			      	cellFeatures.setCategory(BabelDomain.valueOf(newVal));
+  			      	cellFeatures.setEdited(true);
   			      	m_ConceptsTable.refresh();
   		      }
   			});
@@ -445,6 +486,13 @@ public class StatisticsWindow implements Initializable {
         @Override
         protected void updateItem(String item, boolean empty) {
             super.updateItem(item, empty);
+            ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get((ConceptID) getTableRow().getItem());
+            if(cellFeatures != null)
+            	if(cellFeatures.getEdited()){
+            		getTableRow().setStyle("-fx-background-color: grey;");
+            	}else{
+            		getTableRow().setStyle("");
+            	}
             if (item == null || empty) {
                 setText(null);
             } else {

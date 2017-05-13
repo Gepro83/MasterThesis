@@ -1,24 +1,20 @@
 package ac.at.wu.conceptfinder.userinterface;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.BabelConceptCreator;
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 
 public class GUI extends Application {
 	private static Database m_database;
 	
     public static void main(String[] args) throws StorageException {
-    	m_database = new Database("jdbc:postgresql://localhost:5432/Test", "postgres", "postgrespass", new BabelConceptCreator());
+    	m_database = new Database("jdbc:postgresql://localhost:5432/Categorizer Eval", "postgres", "postgrespass", new BabelConceptCreator());
         launch(args);
      }
 
@@ -29,7 +25,7 @@ public class GUI extends Application {
         
         Scene scene = new Scene(root, 1250, 900);
     
-        primaryStage.setTitle("FXML Welcome");
+        primaryStage.setTitle("Categorizer");
         primaryStage.setScene(scene);
         
         

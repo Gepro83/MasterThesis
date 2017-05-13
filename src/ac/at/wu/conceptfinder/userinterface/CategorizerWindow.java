@@ -1,22 +1,33 @@
 package ac.at.wu.conceptfinder.userinterface;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
 
 import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Categorizer;
+import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
 import ac.at.wu.conceptfinder.dataset.Configuration;
 import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -28,6 +39,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -35,6 +47,8 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -53,6 +67,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -101,7 +117,83 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		m_ConceptTable.prefWidthProperty().bind(m_MainPane.widthProperty().divide(40).multiply(17));
 		m_ConceptTable.prefHeightProperty().bind(m_MainPane.heightProperty().subtract(m_TopHBox.heightProperty()));
 		m_PortalList.prefWidthProperty().bind(m_MainPane.widthProperty().divide(4));
-		
+		m_menuBar.prefWidthProperty().bind(m_MainPane.widthProperty());
+		//Setting up the menu bar
+		m_saveMenu.setOnAction(new EventHandler<ActionEvent>() {
+	        public void handle(ActionEvent e) {
+				//Set the configuration of the categorizer to the input fields.
+				//If input is invalid do nothing.
+				if(!setConfiguration()) return;
+	        	
+	            FileChooser fileChooser = new FileChooser();
+	            fileChooser.setTitle("Save Settings");
+	            fileChooser.setInitialFileName("Settings");
+	            fileChooser.getExtensionFilters().add(new ExtensionFilter("Categorizer Settings", "*.csf"));
+	            File file = fileChooser.showSaveDialog(new Stage());
+	            if(file == null) return;
+	            try {
+					m_Categorizer.saveSettings(file);
+				} catch (IOException e1) {
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setContentText("Cannot save file");
+					alert.showAndWait();
+				}
+
+	        }
+	    });
+		m_loadMenu.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+	            FileChooser fileChooser = new FileChooser();
+	            fileChooser.setTitle("Load Settings");
+	            fileChooser.getExtensionFilters().add(new ExtensionFilter("Categorizer Settings", "*.csf"));
+	            File file = fileChooser.showOpenDialog(new Stage());
+	            if(file == null) return;
+	            if(!file.canRead()) return;
+	            try {
+					m_Categorizer.loadSettings(file);
+				} catch (IOException e1) {
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setContentText("Cannot load file");
+					alert.showAndWait();
+				}
+	            refreshUI();
+	        }
+	    });
+		//The export results as csv menu item first lets the user select one or more portals 
+		//and then runs categorization on each portal saving the resulting category frequencies to a csv file
+		CategorizerWindow thisWindow = this;
+		m_ExportCSV.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent e) {
+					try {
+						//Set the configuration of the categorizer to the input fields.
+						//If input is invalid do nothing.
+						if(!setConfiguration()) return;
+						//Let the user select any number of portals
+						SelectPortalWindow w = new SelectPortalWindow();
+						List<String> selectedPortals = w.selectPortals(m_Database.getAllPortals());
+						//Let the user chose a destination file
+						FileChooser fileChooser = new FileChooser();
+				        fileChooser.setTitle("Export category frequencies");
+				        fileChooser.setInitialFileName("category frequencies");
+				        fileChooser.getExtensionFilters().add(new ExtensionFilter("CSV File", "*.csv"));
+				        File file = fileChooser.showSaveDialog(new Stage());
+				        if(file == null) return;
+				        //Run categorization on the selected portals and save the results to the selected file
+				        ExportCsvWindow exportWindow = new ExportCsvWindow(selectedPortals);
+				        exportWindow.display(m_Database, m_Categorizer, file);
+				        
+
+					} catch (StorageException e1){
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setContentText("Cannot connect to Database");
+						alert.showAndWait();
+					} catch (IOException e1) {
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setContentText("Cannot write to this file");
+						alert.showAndWait();
+					}
+				    }
+		});
 		//Setting up the columns for the Dataset table
 		m_LinkColumn.setCellValueFactory(new Callback<CellDataFeatures<Dataset, String>, ObservableValue<String>>() {
 		   public ObservableValue<String> call(CellDataFeatures<Dataset, String> arg) {
@@ -281,30 +373,15 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		});
 
 		//The load button opens a new window which lets the user select from all available portals
-		CategorizerWindow thisWindow = this;
 		m_LoadBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
 				try {
-					//Load the new window
-					FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("LoadPortals.fxml"));
-					Parent root1 = (Parent) loader.load();
-			        Stage stage = new Stage();
-			        stage.initModality(Modality.NONE);
-			        stage.initStyle(StageStyle.DECORATED);
-			        stage.setTitle("Load Datasets");
-			        stage.setScene(new Scene(root1));  
-			        //Tell the selection window which portals exist
-			        PortalSelectionWindow selectPortal = loader.<PortalSelectionWindow>getController();
-			        selectPortal.fillPortals(m_Database.getAllPortals());
-			        //Allow the window to callback with the results
-			        selectPortal.registerResultListener(thisWindow);
-			        
-				    stage.show();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					SelectPortalWindow w = new SelectPortalWindow();
+					loadPortals(w.selectPortals(m_Database.getAllPortals()));
 				} catch (StorageException e1){
-					e1.printStackTrace();
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setContentText("Cannot connect to Database");
+					alert.showAndWait();
 				}
 		    }
 		});
@@ -312,7 +389,6 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		//The unload button removes the selected portal from the list and removes all datasets belonging to the corresponding portal
 		m_UnloadBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
-				System.out.println("remove");
 				int selectedPortalIndex = m_PortalList.getSelectionModel().getSelectedIndex();
 				//Only do something if a portal is selected
 				if(selectedPortalIndex < 0) return;
@@ -366,19 +442,9 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		//The categorize button performs the categorization of all active datasets using the settings entered in the textfields
 		m_CategorizeBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
-				//First check if all input input is valid
-				if(!checkInputFields()) return;
-				//Create set the configuration of the Categorizer with the settings of the input fields
-				Configuration conf = m_Categorizer.Configuration();
-				conf.setMCSScore(Float.parseFloat(m_MCSTf.getText()));
-				conf.setRelevanceWeight(Float.parseFloat(m_RelScoreTf.getText()));
-				conf.setCoherenceWeight(Float.parseFloat(m_CohScoreTf.getText()));
-				conf.setKeywordsWeight(Float.parseFloat(m_KeyTf.getText()));
-				conf.setCategoryConfidenceWeight(Float.parseFloat(m_CatConfTf.getText()));
-				conf.setRepeatedConceptWeight(Float.parseFloat(m_RepeatTf.getText()));
-				conf.setMaxOutputCategories(Integer.parseInt(m_MaxCatsTf.getText()));
-				conf.setMinOutputCategories(Integer.parseInt(m_MinCatsTf.getText()));
-				conf.setMinScore(Float.parseFloat(m_MinCatScoreTf.getText()));
+				//Set the configuration of the categorizer to the input fields.
+				//If input is invalid do nothing.
+				if(!setConfiguration()) return;
 				//Clear the concept tableview
 				m_Conceptsdata.clear();
 				//Run the categorization algorithm
@@ -420,8 +486,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		m_FilterChoice.setItems(m_FilterChoices);
 	}
 	
-	@Override
-	public void portalResultsReady(List<String> list) {
+	private void loadPortals(List<String> list) {
 		//Load all portals in the list of selected portals
 		List<String> currentPortals = m_PortalList.getItems();
 		for(String portal : list){
@@ -459,6 +524,50 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		m_Database = db;
 		m_Categorizer = new Categorizer(m_Database);
 		m_StatisticsWindow.setCategorizer(m_Categorizer);
+	}
+	
+	/*
+	 * Refreshes the UI
+	 */
+	private void refreshUI(){
+		//update text fields
+		Configuration conf = m_Categorizer.Configuration();
+		m_MCSTf.setText(String.valueOf(conf.getMCSScore()));
+		m_RelScoreTf.setText(String.valueOf(conf.getRelevanceWeight()));
+		m_CohScoreTf.setText(String.valueOf(conf.getCoherenceWeight()));
+		m_KeyTf.setText(String.valueOf(conf.getKeywordsWeight()));
+		m_CatConfTf.setText(String.valueOf(conf.getCategoryConfidenceWeight()));
+		m_RepeatTf.setText(String.valueOf(conf.getRepeatedConceptWeight()));
+		m_MinCatsTf.setText(String.valueOf(conf.getMinOutputCategories()));
+		m_MaxCatsTf.setText(String.valueOf(conf.getMaxOutputCategories()));
+		m_MinCatScoreTf.setText(String.valueOf(conf.getMinScore()));
+		//refresh tables
+		m_DatasetTable.refresh();
+		m_ConceptTable.refresh();
+		//refresh statistics window
+		m_StatisticsWindow.refresh();
+		//refresh filter choicebox
+		updateFilterChoiceBox();
+	}
+	
+	/*
+	 * Set the configuration of the Categorizer with the settings of the input fields.
+	 * Checks the input fields and returns false if an error occured. 
+	 */
+	private boolean setConfiguration(){
+		if(!checkInputFields()) return false;
+		
+		Configuration conf = m_Categorizer.Configuration();
+		conf.setMCSScore(Float.parseFloat(m_MCSTf.getText()));
+		conf.setRelevanceWeight(Float.parseFloat(m_RelScoreTf.getText()));
+		conf.setCoherenceWeight(Float.parseFloat(m_CohScoreTf.getText()));
+		conf.setKeywordsWeight(Float.parseFloat(m_KeyTf.getText()));
+		conf.setCategoryConfidenceWeight(Float.parseFloat(m_CatConfTf.getText()));
+		conf.setRepeatedConceptWeight(Float.parseFloat(m_RepeatTf.getText()));
+		conf.setMaxOutputCategories(Integer.parseInt(m_MaxCatsTf.getText()));
+		conf.setMinOutputCategories(Integer.parseInt(m_MinCatsTf.getText()));
+		conf.setMinScore(Float.parseFloat(m_MinCatScoreTf.getText()));
+		return true;
 	}
 	
 	/*
@@ -593,6 +702,14 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	private BorderPane m_MainPane;
 	@FXML
 	private HBox m_TopHBox;
+	@FXML
+	private MenuBar m_menuBar;
+	@FXML
+	private MenuItem m_saveMenu;
+	@FXML
+	private MenuItem m_loadMenu;
+	@FXML
+	private MenuItem m_ExportCSV;
 	@FXML
 	private TextField m_MCSTf;
 	@FXML

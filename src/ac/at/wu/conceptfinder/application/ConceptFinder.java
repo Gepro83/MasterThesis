@@ -86,7 +86,9 @@ public class ConceptFinder {
 			langText = langText.substring(langText.indexOf(Globals.KEYWORDS_MARKER) + Globals.KEYWORDS_MARKER.length());
 			try{
 				Language detectedLanguage = langDetector.identifyLanguage(langText);
-				System.out.println("Language found for dataset: " + dataset.ID().value() + " : " + detectedLanguage);
+				System.out.println("Language found for dataset: " + dataset.ID().value());
+				System.out.println("Language: " + detectedLanguage);
+				System.out.println("Based on: '" + langText + "'");
 				dataset.setLanguage(detectedLanguage);
 				currentConceptText.SetLanguage(detectedLanguage);
 			}catch (LangDetectException e){
@@ -258,24 +260,6 @@ public class ConceptFinder {
 		});
 	}
 	
-	/*
-	 * Derives the categories of a dataset from the concepts and respective scores
-	 */
-	public void deriveCategories() throws StorageException{
-		System.out.println("Deriving categories for datasets...");
-		//Go through all active datasets
-		for(Dataset dataset : m_datasetManager){
-			//Clear the old categories of the dataset
-			dataset.clearCategories();
-			//Select the categories for the current dataset
-			Set<BabelDomain> categories = selectCategories(dataset);
-			//Add the selected categories to the dataset
-			for(BabelDomain category : categories)
-				dataset.addCategory(category, 0);
-		}
-		System.out.println("Done!");
-	}
-	
 	public void showDatasetsWithConcepts(){
 		int counter = 0;
 		for(Dataset ds : m_datasetManager){
@@ -295,7 +279,7 @@ public class ConceptFinder {
 			System.out.println("Description: " + ds.Description());
 			System.out.println("Keywords: " + concatWords(ds.Keywords()));
 			System.out.println("Categories: ");
-			for(BabelDomain cat : selectCategories(ds))
+			for(BabelDomain cat : ds.Categories().keySet())
 				System.out.print(cat + " ");
 			System.out.println("Concepts: ");
 			for(Concept c : ds.Concepts()){
@@ -330,90 +314,7 @@ public class ConceptFinder {
 		scores.setTotalScore(totalScore);
 	}
 	
-	/*
-	 * Selects the categories of a dataset based on the categories and scores of its concepts
-	 * assumes that top concepts have been selected, scored and marked
-	 */
-	private EnumSet<BabelDomain> selectCategories(Dataset dataset){
-		//Keep a list of selected categories - it is empty at the start
-		EnumSet<BabelDomain> topCategories = EnumSet.noneOf(BabelDomain.class);
-		//Keep a map of potential top categories and their scores
-		EnumMap<BabelDomain, Float> potentialTopCategories = new EnumMap<BabelDomain, Float>(BabelDomain.class);
-		//Go through all relevant concepts of the dataset
-		for(Concept concept : dataset.Concepts()){
-			//Ignore concepts with no category
-			if(concept.Category() == null) continue;
-			//If all scores are 0 the concept was found by the most common sense heuristic
-			boolean MCS = (concept.Scores().DisambiguationScore() == 0 &&
-						concept.Scores().RelevanceScore() == 0 &&
-						concept.Scores().CoherenceScore() == 0) ? true : false;
-			//Concepts marked with a 1 are keyword concepts
-			boolean keywordConcept = (concept.Mark().startsWith("1")) ? true : false;
-			//If the category does exist in the map of potential top categories
-			if(potentialTopCategories.containsKey(concept.Category())){
-				//Calculate the score of the category
-				float score = calcCatScore(concept, MCS, keywordConcept);
-				//Add the score to the current score of this category
-				score += potentialTopCategories.get(concept.Category());
-				potentialTopCategories.put(concept.Category(), score);
-			}
-			//If the category does not exist in the map of potential top categories
-			else{
-				//Calculate the score of the category
-				float score = calcCatScore(concept, MCS, keywordConcept);
-				//Add the category to map of potential top categories
-				potentialTopCategories.put(concept.Category(), score);
-			}
-		}
-		//If no categories were found return the empty set
-		if(potentialTopCategories.isEmpty()) return topCategories;
-		//Create a list of all the potential top categories 
-		List<BabelDomain> potentialTopCatsList = new ArrayList<BabelDomain>(potentialTopCategories.keySet());
-		//Sort the list by their scores in the map of potential top categories
-		Collections.sort(potentialTopCatsList, new Comparator<BabelDomain>() {
-			public int compare(BabelDomain o1, BabelDomain o2) {
-				if(potentialTopCategories.get(o1) > potentialTopCategories.get(o2)) return -1;
-				if(potentialTopCategories.get(o1) < potentialTopCategories.get(o2)) return 1;
-				return 0;
-			}
-		});
-
-		//Add the top scored category to the result list of top categories
-		topCategories.add(potentialTopCatsList.get(0));
 		
-		//If there is a 2nd ranked category
-		if(potentialTopCatsList.size() > 1){
-			//If the score of the 2nd ranked category is bigger than  
-			//75% of the score of the top ranked category (if the scores are close)
-			if(potentialTopCategories.get(potentialTopCatsList.get(1)) >=
-				0.75 * potentialTopCategories.get(potentialTopCatsList.get(0))){
-				//Add the 2nd ranked category to the result list as well
-				topCategories.add(potentialTopCatsList.get(1));
-			}
-		}
-		//Return the list
-		return topCategories;
-	}
-	
-	/*
-	 * Calculates the score of the category of a concept
-	 */
-	private float calcCatScore(Concept concept, boolean MCS, boolean keywordConcept){
-		//If the concept was found by the most common sense heuristic
-		//give it a score of 0.75
-		float score = 0.75f;
-		//If it was found by babelfy
-			//give it an evenly weighted score between relevance and coherence score
-		if(!MCS)
-			score = concept.Scores().RelevanceScore() * 0.5f + concept.Scores().CoherenceScore() * 0.5f;
-		//If it is a keyword Concept triple the score
-		if(keywordConcept)
-			score *= 3;
-		//Finally, the score gets weighted by the confidence of the concept belonging to the category
-		score *= concept.CatConfidence();
-		//Return the score
-		return score;
-	}
 	
 	/*
 	 * selects the string that is used for language and concept discovery for each dataset

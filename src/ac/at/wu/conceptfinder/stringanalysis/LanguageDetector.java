@@ -46,8 +46,8 @@ public class LanguageDetector {
 			case "fr":
 				return ac.at.wu.conceptfinder.stringanalysis.Language.FR;
 			
-			case "ro":
-				return ac.at.wu.conceptfinder.stringanalysis.Language.RO;
+			//case "ro":
+			//	return ac.at.wu.conceptfinder.stringanalysis.Language.RO;
 			
 			case "nl":
 				return ac.at.wu.conceptfinder.stringanalysis.Language.NL;
@@ -55,8 +55,8 @@ public class LanguageDetector {
 			case "fi":
 				return ac.at.wu.conceptfinder.stringanalysis.Language.FI;
 				
-			case "ca":
-				return ac.at.wu.conceptfinder.stringanalysis.Language.CA;
+			//case "ca":
+			//	return ac.at.wu.conceptfinder.stringanalysis.Language.CA;
 				
 			case "af":
 				return ac.at.wu.conceptfinder.stringanalysis.Language.AF;
@@ -81,6 +81,24 @@ public class LanguageDetector {
 				
 			case "hr":
 				return ac.at.wu.conceptfinder.stringanalysis.Language.HR;
+				
+			case "ru":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.RU;
+				
+			case "hu":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.HU;
+				
+			case "sv":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.SV;
+			
+			case "sk":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.SK;
+		
+			case "bg":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.BG;
+			
+			case "sw":
+				return ac.at.wu.conceptfinder.stringanalysis.Language.SW;
 		}
 		
 		return ac.at.wu.conceptfinder.stringanalysis.Language.NULL;
