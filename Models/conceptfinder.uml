@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_IMEH0EOcEeevVpiVzsD2xA" name="RootElement">
+  <packagedElement xmi:type="uml:Class" xmi:id="_JAaV4EOcEeevVpiVzsD2xA" name="ConceptFinder">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_CMYA00OdEeevVpiVzsD2xA" name="datasetmanager" type="_-NXNkEOcEeevVpiVzsD2xA" association="_CMYA0EOdEeevVpiVzsD2xA"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_Hw3kI0OdEeevVpiVzsD2xA" name="database" type="_GoeYsUOdEeevVpiVzsD2xA" association="_Hw3kIEOdEeevVpiVzsD2xA"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_VpT6o0OdEeevVpiVzsD2xA" name="concepttext" type="_Q02tIEOdEeevVpiVzsD2xA" aggregation="composite" association="_VpT6oEOdEeevVpiVzsD2xA"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_fBSWoEOdEeevVpiVzsD2xA" name="RdfId"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_XZebQkOeEeevVpiVzsD2xA" name="conceptcreator" type="_RBatAEOeEeevVpiVzsD2xA" association="_XZd0MEOeEeevVpiVzsD2xA"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_bqPs4kOeEeevVpiVzsD2xA" name="conceptdetector" type="_TIS58EOeEeevVpiVzsD2xA" association="_bqPF0EOeEeevVpiVzsD2xA"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_jfdnkEOcEeevVpiVzsD2xA" name="babelnet">
+    <packagedElement xmi:type="uml:Enumeration" xmi:id="_mna3AEOcEeevVpiVzsD2xA" name="BabelDomain"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_ovHjUEOcEeevVpiVzsD2xA" name="use" client="_JAaV4EOcEeevVpiVzsD2xA" supplier="_mna3AEOcEeevVpiVzsD2xA"/>
+  <packagedElement xmi:type="uml:Package" xmi:id="_6Y6rkEOcEeevVpiVzsD2xA" name="dataset">
+    <packagedElement xmi:type="uml:Class" xmi:id="_-NXNkEOcEeevVpiVzsD2xA" name="DatasetManager"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_CMYA0EOdEeevVpiVzsD2xA" memberEnd="_CMYA00OdEeevVpiVzsD2xA _CMYA1EOdEeevVpiVzsD2xA">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_CMYA0UOdEeevVpiVzsD2xA" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_CMYA0kOdEeevVpiVzsD2xA" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_CMYA1EOdEeevVpiVzsD2xA" name="conceptfinder" type="_JAaV4EOcEeevVpiVzsD2xA" association="_CMYA0EOdEeevVpiVzsD2xA"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_GoeYsEOdEeevVpiVzsD2xA" name="storage">
+    <packagedElement xmi:type="uml:Class" xmi:id="_GoeYsUOdEeevVpiVzsD2xA" name="Database"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_Hw3kIEOdEeevVpiVzsD2xA" memberEnd="_Hw3kI0OdEeevVpiVzsD2xA _Hw3kJEOdEeevVpiVzsD2xA">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_Hw3kIUOdEeevVpiVzsD2xA" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_Hw3kIkOdEeevVpiVzsD2xA" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_Hw3kJEOdEeevVpiVzsD2xA" name="conceptfinder" type="_JAaV4EOcEeevVpiVzsD2xA" association="_Hw3kIEOdEeevVpiVzsD2xA"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_PJ4ZEEOdEeevVpiVzsD2xA" name="stringanalysis">
+    <packagedElement xmi:type="uml:Class" xmi:id="_Q02tIEOdEeevVpiVzsD2xA" name="ConceptText"/>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_TIS58EOeEeevVpiVzsD2xA" name="ConceptDetector"/>
+    <packagedElement xmi:type="uml:Interface" xmi:id="_RBatAEOeEeevVpiVzsD2xA" name="ConceptCreator"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_VpT6oEOdEeevVpiVzsD2xA" memberEnd="_VpT6o0OdEeevVpiVzsD2xA _VpT6pEOdEeevVpiVzsD2xA">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_VpT6oUOdEeevVpiVzsD2xA" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_VpT6okOdEeevVpiVzsD2xA" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_VpT6pEOdEeevVpiVzsD2xA" name="conceptfinder" type="_JAaV4EOcEeevVpiVzsD2xA" association="_VpT6oEOdEeevVpiVzsD2xA">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_YQle4EOdEeevVpiVzsD2xA"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_YQle4UOdEeevVpiVzsD2xA" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_XZd0MEOeEeevVpiVzsD2xA" memberEnd="_XZebQkOeEeevVpiVzsD2xA _XZg3gEOeEeevVpiVzsD2xA">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_XZebQEOeEeevVpiVzsD2xA" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_XZebQUOeEeevVpiVzsD2xA" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_XZg3gEOeEeevVpiVzsD2xA" name="conceptfinder" type="_JAaV4EOcEeevVpiVzsD2xA" association="_XZd0MEOeEeevVpiVzsD2xA"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_bqPF0EOeEeevVpiVzsD2xA" memberEnd="_bqPs4kOeEeevVpiVzsD2xA _bqPs40OeEeevVpiVzsD2xA">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_bqPs4EOeEeevVpiVzsD2xA" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_bqPs4UOeEeevVpiVzsD2xA" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_bqPs40OeEeevVpiVzsD2xA" name="conceptfinder" type="_JAaV4EOcEeevVpiVzsD2xA" association="_bqPF0EOeEeevVpiVzsD2xA"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_wwE3IEOeEeevVpiVzsD2xA" name="import" client="_IMEH0EOcEeevVpiVzsD2xA" supplier="_PJ4ZEEOdEeevVpiVzsD2xA"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_0IouYEOeEeevVpiVzsD2xA" name="import" client="_JAaV4EOcEeevVpiVzsD2xA" supplier="_GoeYsEOdEeevVpiVzsD2xA"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_6v26AEOeEeevVpiVzsD2xA" name="import" client="_JAaV4EOcEeevVpiVzsD2xA" supplier="_6Y6rkEOcEeevVpiVzsD2xA"/>
+  <packagedElement xmi:type="uml:Class" xmi:id="_F-tYEEOfEeevVpiVzsD2xA" name="Globals"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_HWwwIEOfEeevVpiVzsD2xA" name="use" client="_JAaV4EOcEeevVpiVzsD2xA" supplier="_F-tYEEOfEeevVpiVzsD2xA"/>
+</uml:Model>

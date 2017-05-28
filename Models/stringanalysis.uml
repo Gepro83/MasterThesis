@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_xBVKAEMAEeewEsWGuOqeaw" name="RootElement">
+  <packageImport xmi:type="uml:PackageImport" xmi:id="_xCZhAEMAEeewEsWGuOqeaw">
+    <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
+  </packageImport>
+  <packagedElement xmi:type="uml:Class" xmi:id="_xxie8EMAEeewEsWGuOqeaw" name="ConceptId"/>
+  <packagedElement xmi:type="uml:Class" xmi:id="_ypsO8EMAEeewEsWGuOqeaw" name="ConceptText" visibility="private">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_CvbcEEMEEeewEsWGuOqeaw" name="Concepts" type="_imdJ8EMCEeewEsWGuOqeaw" aggregation="shared" association="_CvIhIEMEEeewEsWGuOqeaw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_dHwasEMEEeeIEPEd9ZwcCg"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_dIBgcEMEEeeIEPEd9ZwcCg" value="*"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_sG0L00OEEeevVpiVzsD2xA" name="language" type="_pa6gUEMCEeewEsWGuOqeaw" association="_sG0L0EOEEeevVpiVzsD2xA"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_R6SHkEMCEeewEsWGuOqeaw" name="BabelConcept">
+    <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="_IA_40EMDEeewEsWGuOqeaw" client="_R6SHkEMCEeewEsWGuOqeaw" supplier="_imdJ8EMCEeewEsWGuOqeaw" contract="_imdJ8EMCEeewEsWGuOqeaw"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_UGybYEMCEeewEsWGuOqeaw" name="BabelConceptCreator">
+    <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="_7FufwEMDEeewEsWGuOqeaw" client="_UGybYEMCEeewEsWGuOqeaw" supplier="_5JakEEMDEeewEsWGuOqeaw" contract="_5JakEEMDEeewEsWGuOqeaw"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_WY_HgEMCEeewEsWGuOqeaw" name="Babelfyer">
+    <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="_HcfdkEMDEeewEsWGuOqeaw" client="_WY_HgEMCEeewEsWGuOqeaw" supplier="_feYlwEMCEeewEsWGuOqeaw" contract="_feYlwEMCEeewEsWGuOqeaw"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_feYlwEMCEeewEsWGuOqeaw" name="ConceptDetector"/>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_imdJ8EMCEeewEsWGuOqeaw" name="Concept">
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_dzY8MEMFEeeIEPEd9ZwcCg" name="ConceptScores" type="_k0H7YEMCEeewEsWGuOqeaw" association="_dzWf8EMFEeeIEPEd9ZwcCg"/>
+    <ownedAttribute xmi:type="uml:Property" xmi:id="_8i1FAkMFEeeIEPEd9ZwcCg" name="ID" type="_xxie8EMAEeewEsWGuOqeaw" association="_8igU4EMFEeeIEPEd9ZwcCg"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_k0H7YEMCEeewEsWGuOqeaw" name="ConceptScores"/>
+  <packagedElement xmi:type="uml:Enumeration" xmi:id="_pa6gUEMCEeewEsWGuOqeaw" name="Language"/>
+  <packagedElement xmi:type="uml:Class" xmi:id="_qgMtYEMCEeewEsWGuOqeaw" name="LanguageDetector"/>
+  <packagedElement xmi:type="uml:Interface" xmi:id="_5JakEEMDEeewEsWGuOqeaw" name="ConceptCreator"/>
+  <packagedElement xmi:type="uml:Association" xmi:id="_CvIhIEMEEeewEsWGuOqeaw" visibility="public" memberEnd="_CvbcEEMEEeewEsWGuOqeaw _CvbcEUMEEeewEsWGuOqeaw">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_CvSSIEMEEeewEsWGuOqeaw" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_CvSSIUMEEeewEsWGuOqeaw" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_CvbcEUMEEeewEsWGuOqeaw" type="_ypsO8EMAEeewEsWGuOqeaw" association="_CvIhIEMEEeewEsWGuOqeaw"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_dzWf8EMFEeeIEPEd9ZwcCg" memberEnd="_dzY8MEMFEeeIEPEd9ZwcCg _dzZjQEMFEeeIEPEd9ZwcCg">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_dzXuEEMFEeeIEPEd9ZwcCg" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_dzYVIEMFEeeIEPEd9ZwcCg" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_dzZjQEMFEeeIEPEd9ZwcCg" type="_imdJ8EMCEeewEsWGuOqeaw" association="_dzWf8EMFEeeIEPEd9ZwcCg">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_hxJyQEMFEeeIEPEd9ZwcCg" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_hxMOgEMFEeeIEPEd9ZwcCg" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_8igU4EMFEeeIEPEd9ZwcCg" memberEnd="_8i1FAkMFEeeIEPEd9ZwcCg _8i4IUEMFEeeIEPEd9ZwcCg">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_8i1FAEMFEeeIEPEd9ZwcCg" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_8i1FAUMFEeeIEPEd9ZwcCg" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_8i4IUEMFEeeIEPEd9ZwcCg" type="_imdJ8EMCEeewEsWGuOqeaw" association="_8igU4EMFEeeIEPEd9ZwcCg">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_HPQLcEMGEeeIEPEd9ZwcCg" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_HPn-4EMGEeeIEPEd9ZwcCg" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_dZUkcEMHEeeIEPEd9ZwcCg" name="create" client="_5JakEEMDEeewEsWGuOqeaw" supplier="_imdJ8EMCEeewEsWGuOqeaw"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_gv10UEMHEeeIEPEd9ZwcCg" name="create" client="_UGybYEMCEeewEsWGuOqeaw" supplier="_R6SHkEMCEeewEsWGuOqeaw"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_5EXvMEMHEeeIEPEd9ZwcCg" name="use" client="_qgMtYEMCEeewEsWGuOqeaw" supplier="_pa6gUEMCEeewEsWGuOqeaw"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_53SZ4EMHEeeIEPEd9ZwcCg" name="create" client="_WY_HgEMCEeewEsWGuOqeaw" supplier="_R6SHkEMCEeewEsWGuOqeaw"/>
+  <packagedElement xmi:type="uml:Package" xmi:id="_B3GwIEMIEeeIEPEd9ZwcCg" name="babelfy"/>
+  <packagedElement xmi:type="uml:Package" xmi:id="_DXiBEEMIEeeIEPEd9ZwcCg" name="babelnet">
+    <packagedElement xmi:type="uml:Enumeration" xmi:id="_CfVhcEOPEeevVpiVzsD2xA" name="BabelDomain"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_MHc-kEMIEeeIEPEd9ZwcCg" name="import" client="_xBVKAEMAEeewEsWGuOqeaw" supplier="_DXiBEEMIEeeIEPEd9ZwcCg"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_NOBlEEMIEeeIEPEd9ZwcCg" name="import" client="_WY_HgEMCEeewEsWGuOqeaw" supplier="_B3GwIEMIEeeIEPEd9ZwcCg"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_xCjwsEMOEeeIEPEd9ZwcCg" name="create" client="_xBVKAEMAEeewEsWGuOqeaw" supplier="_imdJ8EMCEeewEsWGuOqeaw"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_6nLhkEMOEeeIEPEd9ZwcCg" name="use" client="_feYlwEMCEeewEsWGuOqeaw" supplier="_xBVKAEMAEeewEsWGuOqeaw"/>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_YsS7AEMPEeeIEPEd9ZwcCg" name="import" client="_R6SHkEMCEeewEsWGuOqeaw" supplier="_DXiBEEMIEeeIEPEd9ZwcCg"/>
+  <packagedElement xmi:type="uml:Association" xmi:id="_sG0L0EOEEeevVpiVzsD2xA" memberEnd="_sG0L00OEEeevVpiVzsD2xA _sG0L1EOEEeevVpiVzsD2xA">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_sG0L0UOEEeevVpiVzsD2xA" source="org.eclipse.papyrus">
+      <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_sG0L0kOEEeevVpiVzsD2xA" key="nature" value="UML_Nature"/>
+    </eAnnotations>
+    <ownedEnd xmi:type="uml:Property" xmi:id="_sG0L1EOEEeevVpiVzsD2xA" name="concepttext" type="_ypsO8EMAEeewEsWGuOqeaw" association="_sG0L0EOEEeevVpiVzsD2xA"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Dependency" xmi:id="_Fkf7kEOPEeevVpiVzsD2xA" name="use" client="_imdJ8EMCEeewEsWGuOqeaw" supplier="_CfVhcEOPEeevVpiVzsD2xA"/>
+  <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_HnJgUEMBEeewEsWGuOqeaw">
+    <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_HnMjoEMBEeewEsWGuOqeaw" source="http://www.eclipse.org/uml2/2.0.0/UML">
+      <references xmi:type="ecore:EPackage" href="pathmap://PAPYRUS_ACTIONLANGUAGE_PROFILE/ActionLanguage-Profile.profile.uml#_Kv8EIKFXEeS_KNX0nfvIVQ"/>
+    </eAnnotations>
+    <appliedProfile xmi:type="uml:Profile" href="pathmap://PAPYRUS_ACTIONLANGUAGE_PROFILE/ActionLanguage-Profile.profile.uml#ActionLanguage"/>
+  </profileApplication>
+</uml:Model>

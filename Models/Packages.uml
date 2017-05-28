@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_-wxCYELoEeep1rxzJAnWWQ" name="RootElement" URI="">
+  <packagedElement xmi:type="uml:Package" xmi:id="_MOEVAELpEeewEsWGuOqeaw" name="dataset">
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_7rFKMELwEeewEsWGuOqeaw" client="_MOEVAELpEeewEsWGuOqeaw" supplier="_MwQcEELpEeewEsWGuOqeaw"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_8HfZYELwEeewEsWGuOqeaw" client="_MOEVAELpEeewEsWGuOqeaw" supplier="_5HHnYELqEeewEsWGuOqeaw"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_MwQcEELpEeewEsWGuOqeaw" name="storage">
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_WgY_wELxEeewEsWGuOqeaw" client="_MwQcEELpEeewEsWGuOqeaw" supplier="_5HHnYELqEeewEsWGuOqeaw"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_XB_4AELxEeewEsWGuOqeaw" client="_MwQcEELpEeewEsWGuOqeaw" supplier="_MOEVAELpEeewEsWGuOqeaw"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_5HHnYELqEeewEsWGuOqeaw" name="stringanalysis"/>
+  <packagedElement xmi:type="uml:Package" xmi:id="__tEAoELqEeewEsWGuOqeaw" name="application">
+    <packageImport xmi:type="uml:PackageImport" xmi:id="_wH1wgELwEeewEsWGuOqeaw" importedPackage="_-wxCYELoEeep1rxzJAnWWQ"/>
+    <packageImport xmi:type="uml:PackageImport" xmi:id="_xIMaQELwEeewEsWGuOqeaw" importedPackage="_-wxCYELoEeep1rxzJAnWWQ"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_0qiDIELxEeewEsWGuOqeaw" client="__tEAoELqEeewEsWGuOqeaw" supplier="_MOEVAELpEeewEsWGuOqeaw"/>
+  </packagedElement>
+</uml:Model>
