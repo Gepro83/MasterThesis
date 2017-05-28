@@ -1,4 +1,4 @@
-package ac.at.wu.conceptfinder.userinterface;
+package ac.at.wu.conceptfinder.application;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -6,14 +6,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Categorizer;
 import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
-import ac.at.wu.conceptfinder.dataset.Configuration;
-import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.storage.StorageException;
-import ac.at.wu.conceptfinder.stringanalysis.Concept;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -85,8 +81,8 @@ public class StatisticsWindow implements Initializable {
 		
 		//Setup columns for concepts table
 		m_ConceptsTable.setEditable(true);
-		m_ConceptNameColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
+		m_ConceptNameColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptId, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<ConceptId, String> arg) {
 				   String name = "";
 				   ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue());
 				   if(features != null)
@@ -95,8 +91,8 @@ public class StatisticsWindow implements Initializable {
 			   }
 		});
 		m_ConceptFreqColumn.setEditable(false);
-		m_ConceptFreqColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
+		m_ConceptFreqColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptId, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<ConceptId, String> arg) {
 				   String freq = "";
 				   ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue());
 				 //Round to 3 digits for readability and convert to a % representation
@@ -109,13 +105,13 @@ public class StatisticsWindow implements Initializable {
 		});
 		//Categories and category confidence can be edited by the user
 		m_ConceptCatColumn.setEditable(true);
-		m_ConceptCatColumn.setCellFactory(new Callback<TableColumn<ConceptID, String>, TableCell<ConceptID, String>>() {
-            public TableCell<ConceptID, String> call(TableColumn<ConceptID, String> p) {
+		m_ConceptCatColumn.setCellFactory(new Callback<TableColumn<ConceptId, String>, TableCell<ConceptId, String>>() {
+            public TableCell<ConceptId, String> call(TableColumn<ConceptId, String> p) {
                 return new ChoiceEditingCell();
              }
         });
-		m_ConceptCatColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
+		m_ConceptCatColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptId, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<ConceptId, String> arg) {
 				   String cat = "";
 				   ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue());
 				   if(features != null)
@@ -125,8 +121,8 @@ public class StatisticsWindow implements Initializable {
 			   }
 		});
 		m_ConceptCatConfColumn.setEditable(true);
-		m_ConceptCatConfColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
+		m_ConceptCatConfColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptId, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<ConceptId, String> arg) {
 				   String conf = "";
 				   ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue());
 				   if(features != null)
@@ -134,15 +130,15 @@ public class StatisticsWindow implements Initializable {
 			       return new SimpleStringProperty(conf);
 			   }
 		});
-		m_ConceptCatConfColumn.setCellFactory(new Callback<TableColumn<ConceptID, String>, TableCell<ConceptID, String>>() {
-            public TableCell<ConceptID, String> call(TableColumn<ConceptID, String> p) {
+		m_ConceptCatConfColumn.setCellFactory(new Callback<TableColumn<ConceptId, String>, TableCell<ConceptId, String>>() {
+            public TableCell<ConceptId, String> call(TableColumn<ConceptId, String> p) {
                 return new TextEditingCell();
              }
         });
 		m_ConceptCatConfColumn.setOnEditCommit(
-	            new EventHandler<CellEditEvent<ConceptID, String>>() {
+	            new EventHandler<CellEditEvent<ConceptId, String>>() {
 	                @Override
-	                public void handle(CellEditEvent<ConceptID, String> t) {
+	                public void handle(CellEditEvent<ConceptId, String> t) {
 	                	float newConf;
 	                	try{
 	                		newConf = Float.parseFloat(t.getNewValue());
@@ -154,7 +150,7 @@ public class StatisticsWindow implements Initializable {
 	                		return;
 	                	}
 	                	ConceptFeatures conceptFeatures = m_Categorizer.ConceptIDsToFeatures().get(
-	                    		((ConceptID) t.getTableView().getItems().get(
+	                    		((ConceptId) t.getTableView().getItems().get(
 	                        t.getTablePosition().getRow())
 	                        ));
 	                    conceptFeatures.setCatConf(newConf);
@@ -163,8 +159,8 @@ public class StatisticsWindow implements Initializable {
 	             }
 	        );   
 		m_AvgRelColumn.setEditable(false);
-		m_AvgRelColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
+		m_AvgRelColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptId, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<ConceptId, String> arg) {
 				   String score = "";
 				   ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue());
 				 //Round to 3 digits for readability 
@@ -176,8 +172,8 @@ public class StatisticsWindow implements Initializable {
 			   }
 		});
 		m_AvgCohColumn.setEditable(false);
-		m_AvgCohColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
+		m_AvgCohColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptId, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<ConceptId, String> arg) {
 				   String score = "";
 				   ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue());
 				 //Round to 3 digits for readability 
@@ -190,15 +186,15 @@ public class StatisticsWindow implements Initializable {
 		});
 		//The weight column is an editable cell
 		m_WeightColumn.setEditable(true);	             
-	    m_WeightColumn.setCellFactory(new Callback<TableColumn<ConceptID, String>, TableCell<ConceptID, String>>() {
-            public TableCell<ConceptID, String> call(TableColumn<ConceptID, String> p) {
+	    m_WeightColumn.setCellFactory(new Callback<TableColumn<ConceptId, String>, TableCell<ConceptId, String>>() {
+            public TableCell<ConceptId, String> call(TableColumn<ConceptId, String> p) {
                 return new TextEditingCell();
              }
         });
 	    m_WeightColumn.setOnEditCommit(
-	            new EventHandler<CellEditEvent<ConceptID, String>>() {
+	            new EventHandler<CellEditEvent<ConceptId, String>>() {
 	                @Override
-	                public void handle(CellEditEvent<ConceptID, String> t) {
+	                public void handle(CellEditEvent<ConceptId, String> t) {
 	                	float newWeight;
 	                	try{
 	                		newWeight = Float.parseFloat(t.getNewValue());
@@ -212,7 +208,7 @@ public class StatisticsWindow implements Initializable {
 	                		return;
 	                	}
 	                	ConceptFeatures conceptFeatures = m_Categorizer.ConceptIDsToFeatures().get(
-	                    		((ConceptID) t.getTableView().getItems().get(
+	                    		((ConceptId) t.getTableView().getItems().get(
 	        	                        t.getTablePosition().getRow())
 	        	                        )); 
 	                    conceptFeatures.setWeight(newWeight);
@@ -221,8 +217,8 @@ public class StatisticsWindow implements Initializable {
 	                }
 	             }
 	        );   
-		m_WeightColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptID, String>, ObservableValue<String>>() {
-			   public ObservableValue<String> call(CellDataFeatures<ConceptID, String> arg) {
+		m_WeightColumn.setCellValueFactory(new Callback<CellDataFeatures<ConceptId, String>, ObservableValue<String>>() {
+			   public ObservableValue<String> call(CellDataFeatures<ConceptId, String> arg) {
 				   String weight = "";
 				   ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(arg.getValue());
 				   if(features != null)
@@ -235,7 +231,7 @@ public class StatisticsWindow implements Initializable {
 		MenuItem cmReset = new MenuItem("Reset to default");
 		cmReset.setOnAction(new EventHandler<ActionEvent>() {
 		    public void handle(ActionEvent e) {
-		    	ConceptID selectedID = m_ConceptsTable.getSelectionModel().getSelectedItem();
+		    	ConceptId selectedID = m_ConceptsTable.getSelectionModel().getSelectedItem();
 		    	ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get(selectedID);
 		    	try {
 					Map.Entry<BabelDomain, Float> stdValues = m_Categorizer.getDefaultCategoryWithConf(selectedID).entrySet().iterator().next();
@@ -265,7 +261,7 @@ public class StatisticsWindow implements Initializable {
 		    @Override
 		    public void handle(KeyEvent t) {
 			   	if(t.isControlDown() && t.getCode() == KeyCode.C){
-			    	ConceptID selectedID = m_ConceptsTable.getSelectionModel().getSelectedItem();
+			    	ConceptId selectedID = m_ConceptsTable.getSelectionModel().getSelectedItem();
 			    	if(selectedID == null) return;
 
 			    	final Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -313,12 +309,12 @@ public class StatisticsWindow implements Initializable {
 		m_ConceptsData.clear();
 		//Table entries are sorted by frequency of the concepts in the datasets
 		//Create a map of conceptIDs to the frequencies of the corresponding concepts
-		HashMap<ConceptID, Float> conceptIDsToFrequencies = new HashMap<ConceptID, Float>();
-		for(Map.Entry<ConceptID, ConceptFeatures> conceptIdToFeature : m_Categorizer.ConceptIDsToFeatures().entrySet())
+		HashMap<ConceptId, Float> conceptIDsToFrequencies = new HashMap<ConceptId, Float>();
+		for(Map.Entry<ConceptId, ConceptFeatures> conceptIdToFeature : m_Categorizer.ConceptIDsToFeatures().entrySet())
 			conceptIDsToFrequencies.put(conceptIdToFeature.getKey(), conceptIdToFeature.getValue().Frequency());
 		
 		//Add the conceptIDs in the appropriate order
-		for(Map.Entry<ConceptID, Float> conceptIdToFrequency : Globals.entriesSortedByValues(conceptIDsToFrequencies))
+		for(Map.Entry<ConceptId, Float> conceptIdToFrequency : Globals.entriesSortedByValues(conceptIDsToFrequencies))
 			m_ConceptsData.add(0, conceptIdToFrequency.getKey());
 		//refresh tables
 		m_CategoriesTable.refresh();
@@ -348,29 +344,29 @@ public class StatisticsWindow implements Initializable {
 	private TableColumn<BabelDomain, String> m_CatFreqColumn;
 
 	@FXML
-	private TableView<ConceptID> m_ConceptsTable;
+	private TableView<ConceptId> m_ConceptsTable;
 	@FXML
-	private TableColumn<ConceptID, String> m_ConceptNameColumn;
+	private TableColumn<ConceptId, String> m_ConceptNameColumn;
 	@FXML
-	private TableColumn<ConceptID, String> m_ConceptFreqColumn;
+	private TableColumn<ConceptId, String> m_ConceptFreqColumn;
 	@FXML
-	private TableColumn<ConceptID, String> m_ConceptCatColumn;
+	private TableColumn<ConceptId, String> m_ConceptCatColumn;
 	@FXML
-	private TableColumn<ConceptID, String> m_ConceptCatConfColumn;
+	private TableColumn<ConceptId, String> m_ConceptCatConfColumn;
 	@FXML
-	private TableColumn<ConceptID, String> m_AvgRelColumn;
+	private TableColumn<ConceptId, String> m_AvgRelColumn;
 	@FXML
-	private TableColumn<ConceptID, String> m_AvgCohColumn;
+	private TableColumn<ConceptId, String> m_AvgCohColumn;
 	@FXML
-	private TableColumn<ConceptID, String> m_WeightColumn;
+	private TableColumn<ConceptId, String> m_WeightColumn;
 
 	private final ObservableList<BabelDomain> m_CategoriesData = FXCollections.observableArrayList();
-	private final ObservableList<ConceptID> m_ConceptsData = FXCollections.observableArrayList();
+	private final ObservableList<ConceptId> m_ConceptsData = FXCollections.observableArrayList();
 
 	private Categorizer m_Categorizer;
 	private CategorizerCallback m_Callback;
 	
-	class TextEditingCell extends TableCell<ConceptID, String> {
+	class TextEditingCell extends TableCell<ConceptId, String> {
 		 
         private TextField textField;
  
@@ -440,7 +436,7 @@ public class StatisticsWindow implements Initializable {
         }
     }
 	
-	class ChoiceEditingCell extends TableCell<ConceptID, String> {
+	class ChoiceEditingCell extends TableCell<ConceptId, String> {
 		 
         private ChoiceBox<String> m_ChoiceBox = new ChoiceBox<String>();
 
@@ -452,7 +448,7 @@ public class StatisticsWindow implements Initializable {
   		      @Override
   		      public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
   			      	if(newVal == null) return;
-  			      	ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get((ConceptID) getTableRow().getItem());
+  			      	ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get((ConceptId) getTableRow().getItem());
   			      	cellFeatures.setCategory(BabelDomain.valueOf(newVal));
   			      	cellFeatures.setEdited(true);
   			      	m_ConceptsTable.refresh();
@@ -486,7 +482,7 @@ public class StatisticsWindow implements Initializable {
         @Override
         protected void updateItem(String item, boolean empty) {
             super.updateItem(item, empty);
-            ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get((ConceptID) getTableRow().getItem());
+            ConceptFeatures cellFeatures = m_Categorizer.ConceptIDsToFeatures().get((ConceptId) getTableRow().getItem());
             if(cellFeatures != null)
             	if(cellFeatures.getEdited()){
             		getTableRow().setStyle("-fx-background-color: grey;");

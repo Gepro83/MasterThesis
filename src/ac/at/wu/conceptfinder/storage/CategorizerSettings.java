@@ -16,7 +16,7 @@ import java.util.Map;
 
 import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
 import ac.at.wu.conceptfinder.dataset.Configuration;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 
 /*
  * Encapsulates all settings of a categorizer. Handles saving and loading them to/from a file.
@@ -32,17 +32,17 @@ public class CategorizerSettings implements Serializable {
 		m_configuration = conf;
 		if(conf == null)
 			m_configuration = new Configuration();
-		m_conceptFeatures = new HashMap<ConceptID, ConceptFeatures>();
+		m_conceptFeatures = new HashMap<ConceptId, ConceptFeatures>();
 	}
 	
 	public Configuration getConfiguration() { return m_configuration; }
-	public Map<ConceptID, ConceptFeatures> getConceptFeatures() { return m_conceptFeatures; }
+	public Map<ConceptId, ConceptFeatures> getConceptFeatures() { return m_conceptFeatures; }
 	
 	/*
 	 * Adds a concept type (id) with its features.
 	 * If the concept id was already added the features will be replaced. 
 	 */
-	public void addConceptFeature(ConceptID cid, ConceptFeatures cfeature) { m_conceptFeatures.put(cid, cfeature); }
+	public void addConceptFeature(ConceptId cid, ConceptFeatures cfeature) { m_conceptFeatures.put(cid, cfeature); }
 	
 	/*
 	 * Saves this CategorizerSettings object to the specified location.
@@ -74,6 +74,6 @@ public class CategorizerSettings implements Serializable {
 	//the configuration of the categorizer
 	private Configuration m_configuration;
 	//all concept ids with features that differ from the standard (meaning they have been altered by the user)
-	private HashMap<ConceptID, ConceptFeatures> m_conceptFeatures;
+	private HashMap<ConceptId, ConceptFeatures> m_conceptFeatures;
 	
 }

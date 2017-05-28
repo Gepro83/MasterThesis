@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import ac.at.wu.conceptfinder.dataset.Dataset;
-import ac.at.wu.conceptfinder.dataset.RdfId;
 import ac.at.wu.conceptfinder.dataset.DatasetManager;
+import ac.at.wu.conceptfinder.dataset.RdfId;
 
 public class tDatasetManager {
 

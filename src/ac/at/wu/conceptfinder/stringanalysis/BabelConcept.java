@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
-import ac.at.wu.conceptfinder.storage.Database;
 import it.uniroma1.lcl.babelnet.InvalidBabelSynsetIDException;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
@@ -13,8 +12,8 @@ public class BabelConcept implements Concept {
 
 	private static final long serialVersionUID = -8193421919124250631L;
 
-	public BabelConcept(ConceptID ID, String name, BabelDomain category, float catConf) throws IOException, InvalidBabelSynsetIDException {
-		m_ConceptID = new ConceptID(ID.value());
+	public BabelConcept(ConceptId ID, String name, BabelDomain category, float catConf) throws IOException, InvalidBabelSynsetIDException {
+		m_ConceptID = new ConceptId(ID.value());
 		m_name = name;
 		m_mark = "";
 		m_scores = new ConceptScores();
@@ -23,8 +22,8 @@ public class BabelConcept implements Concept {
 	}
 
 	@Override
-	public ConceptID ID() {
-		return new ConceptID(m_ConceptID.value());
+	public ConceptId ID() {
+		return new ConceptId(m_ConceptID.value());
 	}
 
 	@Override
@@ -63,13 +62,13 @@ public class BabelConcept implements Concept {
 		return m_catConfidence;
 	}
 	
-	private ConceptID m_ConceptID;
+	private ConceptId m_ConceptID;
 	private String m_name;
 	private ConceptScores m_scores;
 	private String m_mark;
 	private BabelDomain m_category;
 	private float m_catConfidence;
-	private static HashMap<ConceptID, Object[]> m_conceptToDomain = null;
+	private static HashMap<ConceptId, Object[]> m_conceptToDomain = null;
 	
 
 }

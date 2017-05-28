@@ -1,4 +1,5 @@
-package ac.at.wu.conceptfinder.userinterface;
+package ac.at.wu.conceptfinder.application;
+
 
 import java.io.File;
 import java.io.FileWriter;
@@ -15,6 +16,7 @@ import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
+import ac.at.wu.conceptfinder.application.CategorizerCallback;
 import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Categorizer;
 import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
@@ -23,7 +25,7 @@ import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

@@ -14,8 +14,8 @@ import org.junit.Test;
 
 import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.dataset.DatasetFormat;
-import ac.at.wu.conceptfinder.dataset.RdfId;
 import ac.at.wu.conceptfinder.dataset.Distribution;
+import ac.at.wu.conceptfinder.dataset.RdfId;
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.DatasetSearchMask;
 import ac.at.wu.conceptfinder.storage.StorageException;
@@ -23,7 +23,7 @@ import ac.at.wu.conceptfinder.stringanalysis.BabelConcept;
 import ac.at.wu.conceptfinder.stringanalysis.BabelConceptCreator;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptCreator;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import ac.at.wu.conceptfinder.stringanalysis.InvalidConceptIDException;
 import ac.at.wu.conceptfinder.stringanalysis.Language;
 import it.uniroma1.lcl.babelnet.InvalidBabelSynsetIDException;

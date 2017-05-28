@@ -26,11 +26,11 @@ import org.postgresql.util.PSQLException;
 
 import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.dataset.DatasetFormat;
-import ac.at.wu.conceptfinder.dataset.RdfId;
 import ac.at.wu.conceptfinder.dataset.Distribution;
+import ac.at.wu.conceptfinder.dataset.RdfId;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptCreator;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptScores;
 import ac.at.wu.conceptfinder.stringanalysis.InvalidConceptIDException;
 import ac.at.wu.conceptfinder.stringanalysis.Language;
@@ -647,7 +647,7 @@ public class Database {
 	 * Gets the default category and confidence of a specific concept (out of the babeldomains table)
 	 * returns null if there is no default category
 	 */
-	public Map<BabelDomain, Float> getDefaultCategoryWithConf(ConceptID conceptID) throws StorageException{
+	public Map<BabelDomain, Float> getDefaultCategoryWithConf(ConceptId conceptID) throws StorageException{
 		Connection connection = getConnection();
 		Statement insert = getStatement(connection);
 	
@@ -673,8 +673,8 @@ public class Database {
 		try{
 			connection.setAutoCommit(false);
 			Statement insert = getStatement(connection);
-			Map<ConceptID, Object[]> domainMap = loadConceptToDomain();
-			for(ConceptID ID : domainMap.keySet()){
+			Map<ConceptId, Object[]> domainMap = loadConceptToDomain();
+			for(ConceptId ID : domainMap.keySet()){
 				insert.executeUpdate("INSERT INTO babeldomains VALUES('" +
 						ID.value() + "','" +
 						(BabelDomain) domainMap.get(ID)[0] + "'," +
@@ -688,11 +688,11 @@ public class Database {
 	}
 	
 	//Loads the mapping of synsets to BabelDomains with confidence scores from the resource file
-	private HashMap<ConceptID, Object[]> loadConceptToDomain() throws IOException {
+	private HashMap<ConceptId, Object[]> loadConceptToDomain() throws IOException {
 		//Load the file where the domains are stored
 		try (BufferedReader br = new BufferedReader(new FileReader("resources/babeldomains.txt"))) {
 			//Initialise a map to hold 2,68 mio entries
-			HashMap<ConceptID, Object[]> conceptToDomain = new HashMap<ConceptID, Object[]>(2680000, 1);
+			HashMap<ConceptId, Object[]> conceptToDomain = new HashMap<ConceptId, Object[]>(2680000, 1);
 			//Go through the file line by line
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -701,7 +701,7 @@ public class Database {
 				//Split the line at the tabs in the 3 parts mentioned above
 				String[] parts = line.split("\t");
 				//Create a ConceptID out of the first part
-				ConceptID conceptID = new ConceptID(parts[0]);
+				ConceptId conceptID = new ConceptId(parts[0]);
 				//Create a BabelDomain out of the second part 
 				BabelDomain domain = BabelDomain.valueOfName(parts[1]);
 				//Create a float out of the third part
@@ -721,15 +721,15 @@ public class Database {
 	 * 			BabelDomain object under index 0 and the corresponding confidence
 	 * 			as a Float under index 1  
 	 */
-	private HashMap<ConceptID, Object[]> loadActiveDomains() throws StorageException{
+	private HashMap<ConceptId, Object[]> loadActiveDomains() throws StorageException{
 		Connection connection = getConnection();
 		Statement select = getStatement(connection);
 		
 		try {
 			ResultSet results = select.executeQuery("SELECT * FROM activebabeldomains");
-			HashMap<ConceptID, Object[]> babeldomainsMap = new HashMap<ConceptID, Object[]>(8000);
+			HashMap<ConceptId, Object[]> babeldomainsMap = new HashMap<ConceptId, Object[]>(8000);
 			while(results.next()){
-				ConceptID cid = new ConceptID(results.getString("synsetid"));
+				ConceptId cid = new ConceptId(results.getString("synsetid"));
 				BabelDomain domain = BabelDomain.valueOf(results.getString("domain"));
 				float confidence = results.getFloat("confidence");
 				babeldomainsMap.put(cid, new Object[]{domain, confidence});
@@ -767,7 +767,7 @@ public class Database {
 	}
 	
 	private Concept fillConcept(ResultSet result) throws SQLException, InvalidConceptIDException{
-		ConceptID cid = new ConceptID(result.getString("conceptid"));
+		ConceptId cid = new ConceptId(result.getString("conceptid"));
 		Object[] categoryAndConf = m_conceptIdToCategory.get(cid);
 		BabelDomain category = null;
 		float confidence = 0;
@@ -887,5 +887,5 @@ public class Database {
 	private String m_password;
 	private String m_host;
 	private ConceptCreator m_conceptCreator;
-	private HashMap<ConceptID, Object[]> m_conceptIdToCategory;
+	private HashMap<ConceptId, Object[]> m_conceptIdToCategory;
 }

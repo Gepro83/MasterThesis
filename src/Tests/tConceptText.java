@@ -10,7 +10,7 @@ import org.junit.Test;
 import ac.at.wu.conceptfinder.dataset.RdfId;
 import ac.at.wu.conceptfinder.stringanalysis.BabelConcept;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptText;
 import ac.at.wu.conceptfinder.stringanalysis.InvalidConceptIDException;
 import ac.at.wu.conceptfinder.stringanalysis.Language;
@@ -23,8 +23,8 @@ public class tConceptText {
 	Concept car, tree; 
 	
 	public tConceptText() throws IOException, InvalidConceptIDException, InvalidBabelSynsetIDException{
-		car = new BabelConcept(new ConceptID("bn:00007309n"), "car", null, 0);
-		tree = new BabelConcept(new ConceptID("bn:00078131n"), "tree", null, 0);
+		car = new BabelConcept(new ConceptId("bn:00007309n"), "car", null, 0);
+		tree = new BabelConcept(new ConceptId("bn:00078131n"), "tree", null, 0);
 		text.SetLanguage(Language.EN);
 	}
 	
@@ -51,7 +51,7 @@ public class tConceptText {
 
 	@Test
 	public void testConceptIDequals(){
-		EqualsVerifier.forClass(ConceptID.class).verify();
+		EqualsVerifier.forClass(ConceptId.class).verify();
 	}
 
 }

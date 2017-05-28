@@ -1,4 +1,4 @@
-package ac.at.wu.conceptfinder.userinterface;
+package ac.at.wu.conceptfinder.application;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,7 +11,7 @@ import ac.at.wu.conceptfinder.dataset.Categorizer;
 import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.StorageException;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -91,7 +91,7 @@ public class ExportCsvWindow {
 				        //create a new categorizer with the same configuration
 				        Categorizer localCat = new Categorizer(database, categorizer.Configuration());
 				        //Also add all edited concepts to this new categorizer
-				        for(Map.Entry<ConceptID, ConceptFeatures> idWithFeatures : categorizer.ConceptIDsToFeatures().entrySet())
+				        for(Map.Entry<ConceptId, ConceptFeatures> idWithFeatures : categorizer.ConceptIDsToFeatures().entrySet())
 				        	if(idWithFeatures.getValue().getEdited())
 				        		localCat.addConceptWithFeatures(idWithFeatures.getKey(), idWithFeatures.getValue());
 				        //Run the categorization on every portal on the list and save the results to a list

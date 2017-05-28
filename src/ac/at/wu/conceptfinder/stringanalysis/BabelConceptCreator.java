@@ -6,10 +6,10 @@ import java.util.HashMap;
 import it.uniroma1.lcl.babelnet.InvalidBabelSynsetIDException;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
-public class BabelConceptCreator extends ConceptCreator {
+public class BabelConceptCreator implements ConceptCreator {
 
 	@Override
-	public Concept createConcept(ConceptID ID, 
+	public Concept createConcept(ConceptId ID, 
 			String name, 
 			ConceptScores scores,
 			String mark,

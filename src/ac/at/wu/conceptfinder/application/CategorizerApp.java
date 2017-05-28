@@ -1,4 +1,4 @@
-package ac.at.wu.conceptfinder.userinterface;
+package ac.at.wu.conceptfinder.application;
 
 
 import ac.at.wu.conceptfinder.storage.Database;
@@ -10,7 +10,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class GUI extends Application {
+public class CategorizerApp extends Application {
 	private static Database m_database;
 	
     public static void main(String[] args) throws StorageException {

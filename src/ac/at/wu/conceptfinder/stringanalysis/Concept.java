@@ -7,7 +7,7 @@ import java.util.Map;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
 public interface Concept extends Serializable{
-	public ConceptID ID();
+	public ConceptId ID();
 	public String Name();
 	public String Mark();
 	public void setMark(String mark);

@@ -1,4 +1,4 @@
-package ac.at.wu.conceptfinder.userinterface;
+package ac.at.wu.conceptfinder.application;
 
 
 import java.util.List;

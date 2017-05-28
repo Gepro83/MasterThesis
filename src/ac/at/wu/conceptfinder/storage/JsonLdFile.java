@@ -25,8 +25,8 @@ import com.github.jsonldjava.core.RDFDataset;
 import com.github.jsonldjava.utils.JsonUtils;
 
 import ac.at.wu.conceptfinder.dataset.Dataset;
-import ac.at.wu.conceptfinder.dataset.RdfId;
 import ac.at.wu.conceptfinder.dataset.Distribution;
+import ac.at.wu.conceptfinder.dataset.RdfId;
 
 public class JsonLdFile {
 	

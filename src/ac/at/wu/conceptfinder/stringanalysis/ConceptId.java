@@ -5,13 +5,11 @@ import java.io.Serializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import ac.at.wu.conceptfinder.dataset.RdfId;
-
-public final class ConceptID implements Serializable {
+public final class ConceptId implements Serializable {
 	
 	private static final long serialVersionUID = 2804586414281656929L;
 
-	public ConceptID(String ID){
+	public ConceptId(String ID){
 		m_ID = ID;
 	}
 	
@@ -26,11 +24,11 @@ public final class ConceptID implements Serializable {
 	@Override
 	public boolean equals(Object obj){
 		if(obj == null) return false;
-		if (!(obj instanceof ConceptID))
+		if (!(obj instanceof ConceptId))
 	            return false;
 	        if (obj == this)
 	            return true;
-	    ConceptID ID = (ConceptID) obj;
+	    ConceptId ID = (ConceptId) obj;
 	    
 	    return new EqualsBuilder().
 	    		append(m_ID, ID.value()).

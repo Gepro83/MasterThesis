@@ -6,8 +6,8 @@ import it.uniroma1.lcl.babelnet.data.BabelDomain;
 /*
  * Factory for concepts
  */
-public abstract class ConceptCreator {
-	public abstract Concept createConcept(ConceptID ID, 
+public interface ConceptCreator {
+	public Concept createConcept(ConceptId ID, 
 			String name, 
 			ConceptScores scores,
 			String mark,

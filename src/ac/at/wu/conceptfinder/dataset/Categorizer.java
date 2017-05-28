@@ -17,7 +17,7 @@ import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.DatasetSearchMask;
 import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.Concept;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
 /*
@@ -35,7 +35,7 @@ public class Categorizer {
 		m_Configuration = new Configuration();
 		m_Datasets = new DatasetManager();
 		m_CategoryToFrequency = new EnumMap<BabelDomain, Float>(BabelDomain.class);
-		m_ConceptIDsToFeatures = new HashMap<ConceptID, ConceptFeatures>();
+		m_ConceptIDsToFeatures = new HashMap<ConceptId, ConceptFeatures>();
 	}
 	
 	public Categorizer(Database database, Configuration conf){
@@ -43,7 +43,7 @@ public class Categorizer {
 		m_Configuration = conf;
 		m_Datasets = new DatasetManager();
 		m_CategoryToFrequency = new EnumMap<BabelDomain, Float>(BabelDomain.class);
-		m_ConceptIDsToFeatures = new HashMap<ConceptID, ConceptFeatures>();
+		m_ConceptIDsToFeatures = new HashMap<ConceptId, ConceptFeatures>();
 	}
 	
 	/*
@@ -52,14 +52,14 @@ public class Categorizer {
 	public Set<Dataset> Datasets(){ return Collections.unmodifiableSet(m_Datasets.Datasets()); }
 	//The current Configuration of this Categorizer 
 	public Configuration Configuration(){ return m_Configuration; }
-	public Map<ConceptID, ConceptFeatures> ConceptIDsToFeatures(){ return Collections.unmodifiableMap(m_ConceptIDsToFeatures); }
+	public Map<ConceptId, ConceptFeatures> ConceptIDsToFeatures(){ return Collections.unmodifiableMap(m_ConceptIDsToFeatures); }
 	/*
 	 * This is a map that maps all occurring categories of the active datasets to their corresponding frequencies.
 	 * The frequency of a category corresponds to the probability of a single dataset to belong to this category.
 	 */
 	public Map<BabelDomain, Float> CategoriesToFrequency(){ return Collections.unmodifiableMap(m_CategoryToFrequency); }
 	//Adds a specific concept with corresponding features to this categorizer - if it allready exists it will be replaced
-	public void addConceptWithFeatures(ConceptID id, ConceptFeatures features){
+	public void addConceptWithFeatures(ConceptId id, ConceptFeatures features){
 		m_ConceptIDsToFeatures.put(id, features);
 		//recalculate average scores and frequencies
 		calcConceptIDsToFeatures();
@@ -122,7 +122,7 @@ public class Categorizer {
 	 * Calculates the number of distinct concepts (distinct conceptIDs to be exact) in the datasets
 	 */
 	public int DistinctConceptsCount(){
-		HashSet<ConceptID> occurringConcepts = new HashSet<ConceptID>();
+		HashSet<ConceptId> occurringConcepts = new HashSet<ConceptId>();
 		for(Dataset dataset : m_Datasets)
 			for(Concept concept : dataset.Concepts())
 				occurringConcepts.add(concept.ID());
@@ -135,7 +135,7 @@ public class Categorizer {
 	public void saveSettings(File file) throws IOException{
 		CategorizerSettings settings = new CategorizerSettings(m_Configuration);
 		//Only save concept features that have been edited
-		for(Map.Entry<ConceptID, ConceptFeatures> conceptFeature : m_ConceptIDsToFeatures.entrySet()){
+		for(Map.Entry<ConceptId, ConceptFeatures> conceptFeature : m_ConceptIDsToFeatures.entrySet()){
 			if(conceptFeature.getValue().getEdited())
 				settings.addConceptFeature(conceptFeature.getKey(), conceptFeature.getValue());
 		}
@@ -163,7 +163,7 @@ public class Categorizer {
 	 * Returns a map with a single entry for the default category and the corresponding default confidence.
 	 * @return BabelDomain is null if there is no category
 	 */
-	public Map<BabelDomain, Float> getDefaultCategoryWithConf(ConceptID conceptID) throws StorageException{
+	public Map<BabelDomain, Float> getDefaultCategoryWithConf(ConceptId conceptID) throws StorageException{
 		Map<BabelDomain, Float> defaults = m_Database.getDefaultCategoryWithConf(conceptID);
 		if(defaults == null)
 			return Collections.singletonMap(null, 0.0f);
@@ -179,8 +179,8 @@ public class Categorizer {
 	 */
 	private void calcConceptIDsToFeatures(){
 		//Keep a list of edited features
-		HashMap<ConceptID, ConceptFeatures> editedFeatures = new HashMap<ConceptID, ConceptFeatures>();
-		for(Map.Entry<ConceptID, ConceptFeatures> idWithFeature : m_ConceptIDsToFeatures.entrySet())
+		HashMap<ConceptId, ConceptFeatures> editedFeatures = new HashMap<ConceptId, ConceptFeatures>();
+		for(Map.Entry<ConceptId, ConceptFeatures> idWithFeature : m_ConceptIDsToFeatures.entrySet())
 			if(idWithFeature.getValue().getEdited())
 				editedFeatures.put(idWithFeature.getKey(), idWithFeature.getValue());
 		//Clear the map
@@ -188,7 +188,7 @@ public class Categorizer {
 		//Go through all active datasets
 		for(Dataset dataset : m_Datasets){
 			//Keep track of concepts that have already occurred in the dataset
-			HashSet<ConceptID> occurredConcepts = new HashSet<ConceptID>();
+			HashSet<ConceptId> occurredConcepts = new HashSet<ConceptId>();
 			//For every concept of each datasets
 			for(Concept concept : dataset.Concepts()){
 				//If the concept id is not yet in the map
@@ -249,7 +249,7 @@ public class Categorizer {
 			}
 		}
 		//If the edited concept features do not occur in the current dataset add them with 0 frequency and 0 average scores
-		for(Map.Entry<ConceptID, ConceptFeatures> idWithFeature : editedFeatures.entrySet()){
+		for(Map.Entry<ConceptId, ConceptFeatures> idWithFeature : editedFeatures.entrySet()){
 			if(!m_ConceptIDsToFeatures.containsKey(idWithFeature.getKey())){
 				ConceptFeatures features = idWithFeature.getValue();
 				features.setAvgCohScore(0);
@@ -275,7 +275,7 @@ public class Categorizer {
 		EnumMap<BabelDomain, Integer> numContributeConcepts = new EnumMap<BabelDomain, Integer>(BabelDomain.class);
 		//First go through keyword concepts
 		//Keep a list of conceptIDs that appeared in the dataset
-		HashSet<ConceptID> appearedConcepts = new HashSet<ConceptID>();
+		HashSet<ConceptId> appearedConcepts = new HashSet<ConceptId>();
 		for(Concept concept : dataset.Concepts()){
 			//Work with the concept categories stored in the ConceptFeatures object, meaning they can be altered by the user
 			BabelDomain conceptCategory = m_ConceptIDsToFeatures.get(concept.ID()).Category();
@@ -459,5 +459,5 @@ public class Categorizer {
 	 * A map that contains all distinct concepts (IDs) that occur in the currently active datasets
 	 * together with their features
 	 */
-	private Map<ConceptID, ConceptFeatures> m_ConceptIDsToFeatures;
+	private Map<ConceptId, ConceptFeatures> m_ConceptIDsToFeatures;
 }

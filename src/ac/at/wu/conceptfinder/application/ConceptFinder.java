@@ -30,11 +30,6 @@ import ac.at.wu.conceptfinder.stringanalysis.ConceptScores;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptText;
 import ac.at.wu.conceptfinder.stringanalysis.Language;
 import ac.at.wu.conceptfinder.stringanalysis.LanguageDetector;
-import it.uniroma1.lcl.babelnet.BabelNet;
-import it.uniroma1.lcl.babelnet.BabelSynset;
-import it.uniroma1.lcl.babelnet.BabelSynsetID;
-import it.uniroma1.lcl.babelnet.BabelSynsetType;
-import it.uniroma1.lcl.babelnet.InvalidBabelSynsetIDException;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
 public class ConceptFinder {
@@ -207,29 +202,6 @@ public class ConceptFinder {
 		System.out.println("Updating datasets in database");
 		m_database.saveDatasets(m_datasetManager.Datasets(), saveConcepts);
 		System.out.println("Done!");
-	}
-	
-	/*
-	 * Marks concepts which are named entities and/or key concepts
-	 */
-	public void markNamedAndKeyConcepts() throws IOException, InvalidBabelSynsetIDException{
-		//Connect to babelnet
-		BabelNet babelNet = BabelNet.getInstance();
-		//Go through all concepts of all active datasets
-		for(Dataset dataset : m_datasetManager){
-			for(Concept concept : dataset.Concepts()){
-				//Create a babel synset out of the concept
-				BabelSynset synset = babelNet.getSynset(new BabelSynsetID(concept.ID().value()));
-				//Rempve previous named entity and key concept marks
-				concept.setMark(concept.Mark().replaceAll("(n|k)", ""));
-				//If it is a named entity append "n" to the end of the concepts mark
-				if(synset.getSynsetType() == BabelSynsetType.NAMED_ENTITY)
-					concept.setMark(concept.Mark() + "n");
-				//If it is a key concept append a "k" to the end of the concepts mark
-				if(synset.isKeyConcept())
-					concept.setMark(concept.Mark() + "k");
-			}
-		}
 	}
 	
 	/*

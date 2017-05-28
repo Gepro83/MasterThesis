@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="m_MainPane" prefHeight="900.0" maxWidth="Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.userinterface.CategorizerWindow">
+<BorderPane fx:id="m_MainPane" prefHeight="900.0" maxWidth="Infinity" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ac.at.wu.conceptfinder.application.CategorizerWindow">
    <top>
       <HBox fx:id="m_TopHBox" alignment="CENTER" prefHeight="257.0" maxWidth="Infinity" BorderPane.alignment="CENTER">
          <children HBox.hgrow = "always">

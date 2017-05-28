@@ -10,7 +10,7 @@ import org.junit.Test;
 import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
 import ac.at.wu.conceptfinder.dataset.Configuration;
 import ac.at.wu.conceptfinder.storage.CategorizerSettings;
-import ac.at.wu.conceptfinder.stringanalysis.ConceptID;
+import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
 import it.uniroma1.lcl.babelnet.data.BabelDomain;
 
 public class tCategorizerSettings {
@@ -34,8 +34,8 @@ public class tCategorizerSettings {
 		feat2.setWeight(0.9f);
 		feat2.setCategory(BabelDomain.ANIMALS);
 		CategorizerSettings cs = new CategorizerSettings(conf);
-		cs.addConceptFeature(new ConceptID("c1"), feat1);
-		cs.addConceptFeature(new ConceptID("c2"), feat2);
+		cs.addConceptFeature(new ConceptId("c1"), feat1);
+		cs.addConceptFeature(new ConceptId("c2"), feat2);
 		
 		cs.save(new File(m_file));
 	}
