@@ -106,7 +106,6 @@ public class ExportCsvWindow {
 				        	localCat.unloadPortal(portal);
 				        	//The progressbar is increased for every categorized portal and once for writing the results to the file
 				        	progress += 1 / ((float) m_selectedPortals.size() + 1);
-				        	System.out.println(progress);
 				        	updateProgress(progress, 1);
 				        }
 				        //Write the results the the previously selected file in the csv format - use a colon as a separator

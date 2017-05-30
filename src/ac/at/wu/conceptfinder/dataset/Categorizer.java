@@ -131,12 +131,26 @@ public class Categorizer {
 	
 	/*
 	 * Saves the Configuration and all ConceptFeatures that were edited to a file
+	 * If the file already exists, settings and overlapping conceptfeatures will be overwritten,
+	 * however, non-overlapping conceptfeatures from the file will be kept in new version.
 	 */
 	public void saveSettings(File file) throws IOException{
 		CategorizerSettings settings = new CategorizerSettings(m_Configuration);
+		//If the the file already exists, load it
+		if(file.exists()){
+			try {
+				CategorizerSettings existingSettings = CategorizerSettings.load(file);
+				//Add all existing conceptfeatures
+				for(Map.Entry<ConceptId, ConceptFeatures> conceptFeature : existingSettings.getConceptFeatures().entrySet())
+					settings.addConceptFeature(conceptFeature.getKey(), conceptFeature.getValue());
+			} catch (ClassNotFoundException e) {
+				throw new IOException("Fileformat missmatch");
+			}
+		}
 		//Only save concept features that have been edited
 		for(Map.Entry<ConceptId, ConceptFeatures> conceptFeature : m_ConceptIDsToFeatures.entrySet()){
 			if(conceptFeature.getValue().getEdited())
+				//concept features of the file will be overwritten here
 				settings.addConceptFeature(conceptFeature.getKey(), conceptFeature.getValue());
 		}
 		settings.save(file);

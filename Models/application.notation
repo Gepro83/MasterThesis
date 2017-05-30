@@ -44,6 +44,10 @@
       <layoutConstraint xmi:type="notation:Bounds" xmi:id="_w8OCTEOJEeevVpiVzsD2xA"/>
     </children>
     <children xmi:type="notation:BasicCompartment" xmi:id="_w8OCTUOJEeevVpiVzsD2xA" type="Class_NestedClassifierCompartment">
+      <children xmi:type="notation:Shape" xmi:id="_5pyiMERAEee92OnQmtLtmw" type="Class_ClassNestedClassifierLabel">
+        <element xmi:type="uml:Class" href="application.uml#_5j1rMERAEee92OnQmtLtmw"/>
+        <layoutConstraint xmi:type="notation:Location" xmi:id="_5pyiMURAEee92OnQmtLtmw"/>
+      </children>
       <styles xmi:type="notation:TitleStyle" xmi:id="_w8OCTkOJEeevVpiVzsD2xA"/>
       <styles xmi:type="notation:SortingStyle" xmi:id="_w8OCT0OJEeevVpiVzsD2xA"/>
       <styles xmi:type="notation:FilteringStyle" xmi:id="_w8OCUEOJEeevVpiVzsD2xA"/>

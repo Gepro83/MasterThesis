@@ -23,7 +23,7 @@ public class CategorizerApp extends Application {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("GUI.fxml"));
         Parent root = fxmlLoader.load();
         
-        Scene scene = new Scene(root, 1250, 900);
+        Scene scene = new Scene(root, 1350, 900);
     
         primaryStage.setTitle("Categorizer");
         primaryStage.setScene(scene);

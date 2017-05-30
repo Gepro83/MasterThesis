@@ -8,6 +8,7 @@
     <ownedAttribute xmi:type="uml:Property" xmi:id="_LNmco0OQEeevVpiVzsD2xA" name="concept" type="_3Q0akEOOEeevVpiVzsD2xA" aggregation="composite" association="_LNmcoEOQEeevVpiVzsD2xA"/>
     <ownedAttribute xmi:type="uml:Property" xmi:id="_eBTMMkOQEeevVpiVzsD2xA" name="statisticswindow" type="_N3KHkEOKEeevVpiVzsD2xA" association="_eBKCQEOQEeevVpiVzsD2xA"/>
     <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="_qrLQEEOLEeevVpiVzsD2xA" client="_w8ERQEOJEeevVpiVzsD2xA" supplier="_vCIUIEOJEeevVpiVzsD2xA" contract="_vCIUIEOJEeevVpiVzsD2xA"/>
+    <nestedClassifier xmi:type="uml:Class" xmi:id="_5j1rMERAEee92OnQmtLtmw" name="ConceptTableCell"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Class" xmi:id="_zclGMEOJEeevVpiVzsD2xA" name="ExportCsvWindow"/>
   <packagedElement xmi:type="uml:Class" xmi:id="_1UcmwEOJEeevVpiVzsD2xA" name="Globals"/>

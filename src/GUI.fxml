@@ -52,7 +52,7 @@
                                        </VBox.margin>
                                     </Label>
                                     <Label text="MCS score [0,1]" />
-                                    <TextField fx:id="m_MCSTf" prefHeight="25.0" prefWidth="137.0" text="0.3" />
+                                    <TextField fx:id="m_MCSTf" prefHeight="25.0" prefWidth="137.0" text="0.03" />
                                     <Label text="or">
                                        <font>
                                           <Font name="System Bold" size="14.0" />
@@ -146,7 +146,7 @@
                                     <Insets left="10.0" />
                                  </HBox.margin>
                               </Label>
-                              <TextField fx:id="m_RepeatTf" prefHeight="25.0" prefWidth="31.0" text="0.4">
+                              <TextField fx:id="m_RepeatTf" prefHeight="25.0" prefWidth="50.0" text="0.4">
                                  <HBox.margin>
                                     <Insets left="5.0" />
                                  </HBox.margin>
@@ -156,7 +156,7 @@
                                     <Insets left="10.0" />
                                  </HBox.margin>
                               </Label>
-                              <TextField fx:id="m_MinCatsTf" prefHeight="25.0" prefWidth="28.0" text="1">
+                              <TextField fx:id="m_MinCatsTf" prefHeight="25.0" prefWidth="50.0" text="1">
                                  <HBox.margin>
                                     <Insets left="5.0" />
                                  </HBox.margin>
@@ -166,7 +166,7 @@
                                     <Insets left="10.0" />
                                  </HBox.margin>
                               </Label>
-                              <TextField fx:id="m_MaxCatsTf" prefHeight="25.0" prefWidth="30.0" text="3">
+                              <TextField fx:id="m_MaxCatsTf" prefHeight="25.0" prefWidth="50.0" text="3">
                                  <HBox.margin>
                                     <Insets left="5.0" />
                                  </HBox.margin>
@@ -176,7 +176,7 @@
                                     <Insets left="10.0" />
                                  </HBox.margin>
                               </Label>
-                              <TextField fx:id="m_MinCatScoreTf" prefHeight="25.0" prefWidth="43.0" text="0.02">
+                              <TextField fx:id="m_MinCatScoreTf" prefHeight="25.0" prefWidth="50.0" text="0.02">
                                  <HBox.margin>
                                     <Insets left="5.0" />
                                  </HBox.margin>

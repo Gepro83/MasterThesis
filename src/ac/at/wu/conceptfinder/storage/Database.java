@@ -49,6 +49,8 @@ public class Database {
 		m_conceptCreator = conceptCreator;
 		//Load the mapping for active conceptids to categories
 		m_conceptIdToCategory = loadActiveDomains();
+		//Load mapping of concept ids to concept names
+		m_conceptIdToName = loadConceptNames();
 		try{
 			CreateDatasetTables();
 		}catch (SQLException e){
@@ -444,13 +446,14 @@ public class Database {
 	/*
 	 * Returns all datasets in the database matching the given search mask
 	 * !CURRENTLY NOT LOADING DISTRIBUTIONS!
+	 * for now, total score and disambiguation score are ignored for performance reasons
 	 * @param mask may be null or an empty mask to retrieve all datasets
 	 */
 	public Set<Dataset> getDatasets(DatasetSearchMask mask) throws StorageException{
 		//Establish a connection to the database
 		Connection connection = getConnection();
 		
-		//turn off autocommit
+		//turn off autocommit 
 		try{
 			connection.setAutoCommit(false);
 		}catch (SQLException e) {
@@ -464,7 +467,8 @@ public class Database {
 		//all datasets that match the search mask
 		String qry = "SELECT * from dataset WHERE ";
 		//Also prepare a query for the concepts belonging to the datasets
-		String conceptQry = "SELECT * from concept WHERE datasetid IN (SELECT id FROM dataset WHERE ";
+		String conceptQry = "SELECT datasetid, conceptid, relevancescore, coherencescore, mark"
+				+ " FROM concept WHERE datasetid IN (SELECT id FROM dataset WHERE ";
 		
 		//If the languages parameter of the mask is not empty
 		if(!mask.Languages().isEmpty()){
@@ -512,7 +516,7 @@ public class Database {
 
 		//If mask was empty (no clauses were added) remove WHERE from the query
 		if(qry.endsWith("WHERE ")) qry = "SELECT * from dataset";
-		if(conceptQry.endsWith("WHERE ")){ conceptQry = "SELECT * from concept";
+		if(conceptQry.endsWith("WHERE ")){ conceptQry = "SELECT datasetid, conceptid, relevancescore, coherencescore, mark FROM concept";
 		}else{
 			//Close the subquery
 			conceptQry += ")";
@@ -521,23 +525,18 @@ public class Database {
 			//submit the query to the database and store the resulting table
 			Statement select = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			select.setFetchSize(1000);
-			ResultSet datasetResults = select.executeQuery(qry);
-						
+			ResultSet datasetResults = select.executeQuery(qry);		
 			//Create a map of found datasets and their IDs 
 			HashMap<RdfId, Dataset> foundDatasets = new HashMap<RdfId, Dataset>();
-			
 			//for every row in the resulting table of datasets
 			while(datasetResults.next()){
 				//Create a dataset and fill it with the results
 				Dataset dataset = fillDataset(datasetResults);
-			
 				//add it to the list of found datasets
 				foundDatasets.put(dataset.ID(), dataset);
 			}
-			
 			//Submit concept query and store resulting table
 			ResultSet conceptResults = select.executeQuery(conceptQry);
-
 			//for every row in the resulting table of concepts
 			while(conceptResults.next()){
 				//Create a concept and fill it with the results
@@ -550,13 +549,11 @@ public class Database {
 					//Ignore concepts with invalid IDs
 				}
 			}
-
 			//Close connection
 			select.close();
 			conceptResults.close();
 			datasetResults.close();
 			connection.close();
-			
 			//return the list
 			return new HashSet<Dataset>(foundDatasets.values());
 			
@@ -743,6 +740,33 @@ public class Database {
 	}
 	
 	/*
+	 * loads the conceptnames table from the database
+	 * this represents a mapping between conceptids and names
+	 */
+	private HashMap<ConceptId, String> loadConceptNames() throws StorageException{
+		//Connect to database
+		Connection connection = getConnection();
+		Statement select = getStatement(connection);
+		try{
+			//Execute query
+			ResultSet results = select.executeQuery("SELECT * FROM conceptnames");
+			//Create a map
+			HashMap<ConceptId, String> conceptIdToName = new HashMap<ConceptId, String>();
+			//For every result add an entry to the map
+			while(results.next()){
+				ConceptId cid = new ConceptId(results.getString("cid"));
+				String name = results.getString("name");
+				conceptIdToName.put(cid, name);
+			}
+			return conceptIdToName;
+			
+		}catch (SQLException e) {
+			e.printStackTrace();
+			throw new StorageException("Some SQL error happend when accessing activebabeldomains table ", StorageError.SQLError);
+		}
+	}
+	
+	/*
 	 * fills a dataset with the data that is at the actual position of the cursor
 	 * make sure it does not point to empty row!
 	 */
@@ -779,11 +803,11 @@ public class Database {
 		}
 		Concept concept = 	m_conceptCreator.createConcept(
 						cid, 
-						result.getString("name"),
-				new ConceptScores(result.getFloat("disambiguationscore"),
+						m_conceptIdToName.get(cid),
+				new ConceptScores(0, //disambiguation score currently 0 for performance reasons
 						result.getFloat("relevancescore"), 
 						result.getFloat("coherencescore"), 
-						result.getFloat("totalscore")),
+						0),//total score currently 0 for performance reasons
 						result.getString("mark"),
 						category,
 						confidence);
@@ -888,4 +912,5 @@ public class Database {
 	private String m_host;
 	private ConceptCreator m_conceptCreator;
 	private HashMap<ConceptId, Object[]> m_conceptIdToCategory;
+	private HashMap<ConceptId, String> m_conceptIdToName;
 }
