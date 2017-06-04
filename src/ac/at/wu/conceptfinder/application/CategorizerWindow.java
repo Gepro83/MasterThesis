@@ -41,6 +41,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -63,9 +64,13 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -86,13 +91,25 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	 * The tooltip of a cell displays its contents.
 	 * 
 	 */
-	private final class ConceptTableCell extends TableCell<Concept, String>{
+	
+	private enum CellType{
+		nonEditable, category, confidence, weight;
+	}
+	
+	private class ConceptTableCell extends TableCell<Concept, String>{
+		private CellType m_type;
+		
+		public ConceptTableCell(CellType type){
+			super();
+			m_type = type;
+		}
 			   
 		@Override
 		protected void updateItem(String item, boolean empty) {
 	        super.updateItem(item, empty); 
 	        this.setFont(Font.getDefault());
 	        this.setTextFill(Color.BLACK);
+	        this.setBackground(Background.EMPTY);
 	        
 	        Concept concept = (Concept) this.getTableRow().getItem();
 	        if(concept != null){
@@ -102,6 +119,25 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	        	}
 	        	if(concept.Scores().RelevanceScore() == 0 && concept.Scores().CoherenceScore() == 0)
 	        		this.setTextFill(Color.BLUE);
+	        	//Use categpry, confidence and weight from categorizer, since only there the edited values are saved
+	        	ConceptFeatures features = m_Categorizer.ConceptIDsToFeatures().get(concept.ID());
+	        	//Color edited concepts
+	        	if(features.getEdited())
+	        		this.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(220,220,220)"), CornerRadii.EMPTY, Insets.EMPTY)));
+	        	
+		        if(m_type == CellType.category){
+		        	if(features != null)
+		        		if(features.Category() != null)
+		        			item = features.Category().toString();
+		        }
+		        if(m_type == CellType.confidence){
+		        	if(features != null)
+		        		item = Float.toString(m_Categorizer.ConceptIDsToFeatures().get(concept.ID()).CatConf());
+		        }
+		        if(m_type == CellType.weight){
+		        	if(features != null)
+		        		item = Float.toString(m_Categorizer.ConceptIDsToFeatures().get(concept.ID()).Weight());
+		        }
 	        }
 	        this.setText(item);
 	        Tooltip tooltip = new Tooltip(item);
@@ -261,7 +297,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		});
 		m_ConceptNameColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
 			   public TableCell<Concept, String> call(TableColumn<Concept, String> arg) {
-					   return new ConceptTableCell();
+					   return new ConceptTableCell(CellType.nonEditable);
 			   }
 		});
 		m_ConceptCatColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
@@ -273,7 +309,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		});
 		m_ConceptCatColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
 			   public TableCell<Concept, String> call(TableColumn<Concept, String> arg) {
-					   return new ConceptTableCell();
+					   return new ConceptTableCell(CellType.category);
 			   }
 		});
 		m_ConceptCatConfColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
@@ -283,7 +319,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		});
 		m_ConceptCatConfColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
 			   public TableCell<Concept, String> call(TableColumn<Concept, String> arg) {
-					   return new ConceptTableCell();
+					   return new ConceptTableCell(CellType.confidence);
 			   }
 		});
 		m_ConceptRelScoreColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
@@ -296,7 +332,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		});
 		m_ConceptRelScoreColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
 			   public TableCell<Concept, String> call(TableColumn<Concept, String> arg) {
-					   return new ConceptTableCell();
+					   return new ConceptTableCell(CellType.nonEditable);
 			   }
 		});
 		m_ConceptCohScoreColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
@@ -309,7 +345,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		});
 		m_ConceptCohScoreColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
 			   public TableCell<Concept, String> call(TableColumn<Concept, String> arg) {
-					   return new ConceptTableCell();
+					   return new ConceptTableCell(CellType.nonEditable);
 			   }
 		});
 		m_ConceptWeightColumn.setCellValueFactory(new Callback<CellDataFeatures<Concept, String>, ObservableValue<String>>() {
@@ -322,7 +358,7 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 		});
 		m_ConceptWeightColumn.setCellFactory(new Callback<TableColumn<Concept, String>, TableCell<Concept, String>>() {
 			   public TableCell<Concept, String> call(TableColumn<Concept, String> arg) {
-					   return new ConceptTableCell();
+					   return new ConceptTableCell(CellType.weight);
 			   }
 		});
 		
