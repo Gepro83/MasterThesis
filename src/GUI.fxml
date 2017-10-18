@@ -32,6 +32,7 @@
                           <MenuItem fx:id="m_saveMenu" mnemonicParsing="false" text="Save " />
                           <MenuItem fx:id="m_loadMenu" mnemonicParsing="false" text="Load" />
                           <MenuItem fx:id="m_ExportCSV" mnemonicParsing="false" text="Export Category Frequencies" />
+                          <MenuItem fx:id="m_saveCatsDB" mnemonicParsing="false" text="Save Categories to Database" />
                         </items>
                       </Menu>
                       

@@ -3,12 +3,14 @@ package ac.at.wu.conceptfinder.application;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import ac.at.wu.conceptfinder.dataset.Categorizer;
 import ac.at.wu.conceptfinder.dataset.ConceptFeatures;
+import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.storage.Database;
 import ac.at.wu.conceptfinder.storage.StorageException;
 import ac.at.wu.conceptfinder.stringanalysis.ConceptId;
@@ -97,13 +99,19 @@ public class ExportCsvWindow {
 				        //Run the categorization on every portal on the list and save the results to a list
 				        //A result is a mapping of categories to frequencies for each portal
 				        Map<String, Map<BabelDomain, Float>> results = new HashMap<String, Map<BabelDomain, Float>>();
+				        //also save number of datasets
+				        Map<String, Integer> numDatasets = new HashMap<String, Integer>();
 				        for(String portal : m_selectedPortals){
-				        	
 				        	if (isCancelled()) return null;
 				        	localCat.loadPortal(portal);
 				        	localCat.categorize();
+				        	//Update categories in database
+					        ArrayList<Dataset> allDs  = new ArrayList<Dataset>();
+					        allDs.addAll(localCat.Datasets());
+				        	database.updateCategories(allDs);
+				        	System.out.println("updated");
 				        	results.put(portal, new HashMap<BabelDomain, Float>(localCat.CategoriesToFrequency()));
-				        	localCat.unloadPortal(portal);
+				        	numDatasets.put(portal, localCat.unloadPortal(portal).size());
 				        	//The progressbar is increased for every categorized portal and once for writing the results to the file
 				        	progress += 1 / ((float) m_selectedPortals.size() + 1);
 				        	updateProgress(progress, 1);
@@ -111,17 +119,21 @@ public class ExportCsvWindow {
 				        //Write the results the the previously selected file in the csv format - use a colon as a separator
 				        FileWriter fWriter = new FileWriter(destination);
 				        //As a header name the columns of the file -  first column is the name of the portal, 
+				        //second is number of datasets
 				        //followed by a column for each category
-				        fWriter.write("\"portal\"");
+				        fWriter.write("portal");
+				        fWriter.write(",numDatasets");
 				        for(BabelDomain cat : BabelDomain.values())
-				        	fWriter.write(",\"" + cat + "\"");
+				        	fWriter.write("," + cat);
 				        //Go through the results and add a line for each one to the csv
 				        for(Map.Entry<String, Map<BabelDomain, Float>> result : results.entrySet()){
 				        	if (isCancelled()) return null;
 				        	//Start a new line
 				        	fWriter.write(System.lineSeparator());
 				        	//First column is the name of the portal
-				        	fWriter.write("\"" + result.getKey() + "\"");
+				        	fWriter.write(result.getKey());
+				        	//Second column is the number of datasets
+				        	fWriter.write("," + String.valueOf(numDatasets.get(result.getKey())));
 				        	//Add a frequency for every category
 				        	for(BabelDomain category : BabelDomain.values()){
 				        		Float frequency = result.getValue().get(category);

@@ -232,6 +232,18 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 					}
 				    }
 		});
+		//Save current categories to database
+		m_saveCatsDB.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				try {
+					m_Database.updateCategories(m_data);
+				} catch (StorageException e1) {
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setContentText("Cannot connect to Database");
+					alert.showAndWait();
+				}
+			}
+		});
 		//Setting up the columns for the Dataset table
 		m_LinkColumn.setCellValueFactory(new Callback<CellDataFeatures<Dataset, String>, ObservableValue<String>>() {
 		   public ObservableValue<String> call(CellDataFeatures<Dataset, String> arg) {
@@ -748,6 +760,8 @@ public class CategorizerWindow implements Initializable, CategorizerCallback {
 	private MenuItem m_loadMenu;
 	@FXML
 	private MenuItem m_ExportCSV;
+	@FXML
+	private MenuItem m_saveCatsDB;
 	@FXML
 	private TextField m_MCSTf;
 	@FXML

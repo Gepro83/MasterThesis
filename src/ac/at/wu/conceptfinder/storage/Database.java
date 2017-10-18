@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.postgresql.util.PSQLException;
 
+import ac.at.wu.conceptfinder.application.Globals;
 import ac.at.wu.conceptfinder.dataset.Dataset;
 import ac.at.wu.conceptfinder.dataset.DatasetFormat;
 import ac.at.wu.conceptfinder.dataset.Distribution;
@@ -849,6 +850,8 @@ public class Database {
 			throw new StorageException("some SQL error occured with host: " + m_host, StorageError.SQLError);
 		}
 	}
+	
+	
 
 	/*
 	 * creates a DatasetFormat object out of a string of concatinated formats
@@ -877,6 +880,63 @@ public class Database {
 		}catch (SQLException e){
 			throw new StorageException("cannot connect to " + m_host, StorageError.cannotConnect);
 		}
+	}
+	
+	/*
+	 * updates the categories of a list of datasets
+	 */
+	public void updateCategories(List<Dataset> datasets) throws StorageException{
+		Connection connection = getConnection();
+		Statement update = getStatement(connection);
+		
+		try{
+			connection.setAutoCommit(false);
+			for(Dataset ds : datasets){
+				BabelDomain[] cats = new BabelDomain[3];
+
+				int i = 0;
+				for(Map.Entry<BabelDomain, Float> category : Globals.entriesSortedByValues(ds.Categories())){
+					cats[i] = category.getKey();
+					i++;
+				}
+
+				update.executeUpdate("UPDATE dataset SET cat1 = '" + (cats[0] != null ? cats[0].toString() : "") + "' "
+						+ "WHERE id = '" + ds.ID().value() + "'");
+
+				update.executeUpdate("UPDATE dataset SET score1 = " + (cats[0] != null ? String.valueOf(ds.Categories().get(cats[0])) : "NULL") + " "
+						+ "WHERE id = '" + ds.ID().value() + "'");
+
+				update.executeUpdate("UPDATE dataset SET cat2 = '" + (cats[1] != null ? cats[1].toString() : "") + "' "
+						+ "WHERE id = '" + ds.ID().value() + "'");
+				
+				update.executeUpdate("UPDATE dataset SET score2 = " + (cats[1] != null ? String.valueOf(ds.Categories().get(cats[1])) : "NULL") + " "
+						+ "WHERE id = '" + ds.ID().value() + "'");
+
+				update.executeUpdate("UPDATE dataset SET cat3 = '" + (cats[2] != null ? cats[2].toString() : "") + "' "
+						+ "WHERE id = '" + ds.ID().value() + "'");
+				
+				update.executeUpdate("UPDATE dataset SET score3 = " + (cats[2] != null ? String.valueOf(ds.Categories().get(cats[2])) : "NULL") + " "
+						+ "WHERE id = '" + ds.ID().value() + "'");
+			}
+			connection.commit();
+		}catch (SQLException e){
+			System.out.println(e.getMessage());
+			throw new StorageException("cannot connect to " + m_host, StorageError.cannotConnect);
+		} 
+		
+	}
+	
+	/*
+	 * Concatinates all categories of a dataset into one string separated by #
+	 */
+	private String concatCategories(Dataset dataset){
+		String ret = "";
+		if(dataset.Categories().size() == 0) return ret;
+		
+		for(BabelDomain cat : dataset.Categories().keySet())
+			ret += cat + "#";
+		
+		return ret.substring(0, ret.length() - 1);
 	}
 	
 	/*
